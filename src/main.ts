@@ -276,6 +276,19 @@ function stopPlay(): void {
   refreshGrid();
 }
 
+let lastPlayToggleTs = 0;
+
+function togglePlay(): void {
+  const now = performance.now();
+  if (now - lastPlayToggleTs < 220) return;
+  lastPlayToggleTs = now;
+  if (S.playing) {
+    stopPlay();
+    return;
+  }
+  void startPlay();
+}
+
 // Wire automator start playback
 setOnStartPlayback(startPlay);
 setOnTempoApplied(updateUI);
@@ -375,13 +388,19 @@ function boot(): void {
   });
 
   // Play button
-  document.getElementById('pbtn')!.addEventListener('click', e => {
+  const pbtn = document.getElementById('pbtn')!;
+  const onPlayPress = (e: Event) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (S.playing) {
-      stopPlay();
-      return;
-    }
-    void startPlay();
+    togglePlay();
+  };
+  pbtn.addEventListener('pointerdown', e => e.stopPropagation());
+  pbtn.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  pbtn.addEventListener('pointerup', onPlayPress);
+  pbtn.addEventListener('touchend', onPlayPress, { passive: false });
+  pbtn.addEventListener('click', onPlayPress);
+  pbtn.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') onPlayPress(e);
   });
 
   // Tap

@@ -7,6 +7,7 @@
 }
 
 :root {
+  --wheel-max: 410;
   --bg: #07101a;
   --sur: #0c1826;
   --sur2: #111f30;
@@ -54,6 +55,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
   max-width: 430px;
   margin: 0 auto;
   padding: 6px 0 0
@@ -68,6 +70,12 @@ body {
 
 .page.active {
   display: flex
+}
+
+.page-main.active {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-height: 0
 }
 
 /* TOP PANEL */
@@ -117,6 +125,10 @@ body {
   border-radius: 3px;
   margin-bottom: 6px;
   white-space: nowrap
+}
+
+.label-compact {
+  display: none
 }
 
 .clbl.pk {
@@ -400,7 +412,8 @@ body {
   align-items: center;
   padding: 5px 10px;
   flex-shrink: 0;
-  position: relative
+  position: relative;
+  z-index: 2
 }
 
 .tdiv {
@@ -477,19 +490,23 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  min-height: 176px
+  min-height: 0;
+  padding: 0 14px 6px
 }
 
 .dkwrap {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0
 }
 
 #dkout {
-  width: min(246px, 60vw);
-  height: min(246px, 60vw);
+  width: 100%;
+  height: 100%;
   position: relative;
   flex-shrink: 0
 }
@@ -579,7 +596,9 @@ body {
   cursor: pointer;
   transition: transform .1s;
   flex-shrink: 0;
-  box-shadow: 0 3px 16px color-mix(in srgb, var(--cy) 45%, transparent), inset 0 1px 0 color-mix(in srgb, white 30%, transparent)
+  box-shadow: 0 3px 16px color-mix(in srgb, var(--cy) 45%, transparent), inset 0 1px 0 color-mix(in srgb, white 30%, transparent);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent
 }
 
 #pbtn:hover {
@@ -799,6 +818,179 @@ body {
   color: var(--cy)
 }
 
+@media (max-height: 600px) {
+  .app {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    max-width: min(1180px, 100vw);
+    padding: 6px 0;
+    gap: 4px
+  }
+
+  .page {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0
+  }
+
+  .page-main.active {
+    grid-template-columns: minmax(240px, 1.05fr) minmax(0, .95fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "panel wheel"
+      "controls wheel";
+    column-gap: clamp(2px, .7vw, 8px);
+    row-gap: 6px;
+    padding-right: 2px
+  }
+
+  .panel {
+    grid-area: panel;
+    margin: 0;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0
+  }
+
+  .tbar {
+    grid-area: controls;
+    justify-self: center;
+    align-self: center;
+    padding: 0;
+    margin: 0;
+    background: none
+  }
+
+  .dksec {
+    grid-area: wheel;
+    justify-content: flex-start;
+    padding: 8px 2px 8px 0;
+    min-height: 0
+  }
+
+  .bot {
+    grid-area: controls;
+    width: 100%;
+    padding: 4px 0 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center
+  }
+
+  .sigbtn {
+    grid-column: 1
+  }
+
+  .tapbtn {
+    grid-column: 3
+  }
+
+  .sigbtn,
+  .tapbtn {
+    justify-self: stretch
+  }
+
+  .nav {
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 5px;
+    border-top: none;
+    border-right: 1px solid var(--bdr)
+  }
+
+  .nv {
+    width: 100%;
+    min-height: 38px;
+    padding: 6px 0
+  }
+
+  .nv svg {
+    width: 18px;
+    height: 18px
+  }
+
+  .theme-shell {
+    margin: 0 10px 0 0
+  }
+
+  .hrow {
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-shrink: 0
+  }
+
+  .clbl {
+    margin-bottom: 4px
+  }
+
+  .label-full {
+    display: none
+  }
+
+  .label-compact {
+    display: inline
+  }
+
+  .bnum {
+    font-size: 34px;
+    min-width: 60px
+  }
+
+  .bnote-wrap {
+    display: none
+  }
+
+  .tlbl {
+    font-size: 12px;
+    margin-top: 3px
+  }
+
+  .sigdisp,
+  .sddisp {
+    font-size: 22px
+  }
+
+  #grid {
+    gap: 2px;
+    flex: 1;
+    min-height: 0
+  }
+
+  .brow2 {
+    gap: 2px;
+    flex: 1
+  }
+
+  .cell {
+    height: auto;
+    min-height: 26px
+  }
+
+  .pwrap {
+    height: 34px;
+    margin-top: 5px
+  }
+
+  #pball {
+    height: 26px
+  }
+}
+
+@media (max-height: 520px) {
+  .pwrap {
+    display: none
+  }
+
+  .cell {
+    min-height: 0
+  }
+}
+
 /* OVERLAYS */
 .overlay {
   position: fixed;
@@ -808,7 +1000,8 @@ body {
   display: none;
   align-items: flex-end;
   justify-content: center;
-  backdrop-filter: blur(4px)
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .overlay.open {

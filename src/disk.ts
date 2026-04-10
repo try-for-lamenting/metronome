@@ -22,7 +22,14 @@ function withAlpha(color: string, alpha: number): string {
 export function drawDisk(): void {
   const c = document.getElementById('dkc') as HTMLCanvasElement;
   const o = document.getElementById('dkout') as HTMLElement;
-  const sz = o.offsetWidth || 220;
+  const wrap = o.parentElement as HTMLElement | null;
+  const maxSize = parseFloat(cssVar('--wheel-max')) || 420;
+  const availW = wrap?.clientWidth ?? o.offsetWidth;
+  const availH = wrap?.clientHeight ?? o.offsetHeight;
+  if (!availW || !availH) return;
+  const sz = Math.max(140, Math.min(availW, availH, maxSize));
+  o.style.width = sz + 'px';
+  o.style.height = sz + 'px';
   c.width = sz; c.height = sz;
   c.style.width = sz + 'px'; c.style.height = sz + 'px';
   const ctx = c.getContext('2d')!;
@@ -122,7 +129,7 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
   rim.addEventListener('pointercancel', endRotationDrag);
 
   inner.addEventListener('pointerdown', e => {
-    const target = e.target as HTMLElement | null;
+    const target = e.target instanceof Element ? e.target : null;
     if (target?.closest('#pbtn, #sal, #sar')) return;
     beginRotationDrag(inner, e);
   });
