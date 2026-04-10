@@ -8,6 +8,23 @@ const START_DELAY = 0.12;
 let audioUnlockPromise: Promise<boolean> | null = null;
 let audioPrimed = false;
 let unlockListenersInstalled = false;
+let keepAliveSource: AudioBufferSourceNode | null = null;
+
+function ensureAudioGraph(): AudioContext {
+  if (!S.actx || S.actx.state === 'closed') {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    S.setActx(ctx);
+    audioPrimed = false;
+    keepAliveSource = null;
+  }
+  if (!S.masterGain || S.masterGain.context !== S.actx) {
+    const g = S.actx!.createGain();
+    g.gain.value = S.masterVol;
+    g.connect(S.actx!.destination);
+    S.setMasterGain(g);
+  }
+  return S.actx!;
+}
 
 function setOutputLevel(level: number): void {
   if (!S.actx || !S.masterGain) return;
@@ -16,36 +33,72 @@ function setOutputLevel(level: number): void {
   S.masterGain.gain.setValueAtTime(level, now);
 }
 
+function startKeepAlive(ctx: AudioContext): void {
+  if (keepAliveSource) return;
+  try {
+    const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    src.connect(ctx.destination);
+    src.start();
+    keepAliveSource = src;
+  } catch {
+  }
+}
+
+function stopKeepAlive(): void {
+  if (!keepAliveSource) return;
+  try { keepAliveSource.stop(); } catch { /* already stopped */ }
+  keepAliveSource = null;
+}
+
 function primeAudio(ctx: AudioContext): void {
   if (audioPrimed || !S.masterGain) return;
-  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+  // Play a brief audible-to-iOS click (very low gain but not 0.00001 which
+  // iOS ignores). This activates the hardware audio session on first unlock.
+  const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * 0.02)), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  // Tiny ramp-up/down so it's not a click artifact, but loud enough for iOS
+  // to register as real audio and activate the session.
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    data[i] = 0.001 * Math.sin(Math.PI * t); // near-silent half-sine
+  }
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();
-  gain.gain.value = 0.00001;
+  gain.gain.value = 1;
   source.buffer = buffer;
   source.connect(gain);
   gain.connect(S.masterGain);
   source.start();
+  source.stop(ctx.currentTime + 0.02);
   audioPrimed = true;
 }
+export function nudgeAudioFromGesture(): void {
+  if ('audioSession' in navigator) {
+    (navigator as any).audioSession.type = 'playback';
+  }
 
+  const ctx = ensureAudioGraph();
+  primeAudio(ctx);
+  if (ctx.state !== 'running') {
+    void ctx.resume();
+  }
+}
 export async function ensureAudio(): Promise<boolean> {
-  if (!S.actx) {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    S.setActx(ctx);
-  }
-  if (!S.masterGain) {
-    const g = S.actx!.createGain();
-    g.gain.value = S.masterVol;
-    g.connect(S.actx!.destination);
-    S.setMasterGain(g);
-  }
-  if (S.actx!.state !== 'running') {
+  const ctx = ensureAudioGraph();
+  primeAudio(ctx);
+  if (ctx.state !== 'running') {
     if (!audioUnlockPromise) {
-      audioUnlockPromise = S.actx!.resume()
+      audioUnlockPromise = ctx.resume()
         .then(() => {
-          if (S.actx?.state === 'running') primeAudio(S.actx);
-          return S.actx?.state === 'running';
+          // Don't re-check ctx.state here — on some iOS versions the state
+          // hasn't updated synchronously yet even though resume() resolved.
+          // If the promise resolved without throwing, the context is running.
+          startKeepAlive(ctx);
+          primeAudio(ctx);
+          return true;
         })
         .catch(() => false)
         .finally(() => {
@@ -54,7 +107,7 @@ export async function ensureAudio(): Promise<boolean> {
     }
     return await audioUnlockPromise;
   }
-  primeAudio(S.actx!);
+  startKeepAlive(ctx);
   return true;
 }
 
@@ -63,6 +116,7 @@ export function installAudioUnlock(): void {
   unlockListenersInstalled = true;
 
   const tryUnlock = (): void => {
+    nudgeAudioFromGesture();
     void ensureAudio().then(ready => {
       if (!ready) return;
       window.removeEventListener('pointerdown', tryUnlock);
@@ -163,81 +217,31 @@ function beep(t: number, freq: number, vol: number, dur: number): void {
 
   // Sharp stick attack.
   playFilteredNoiseBurst(
-    ctx,
-    t,
-    Math.max(2200, freq * 2.1),
-    1.1,
-    vol * 0.95,
-    Math.min(0.028, dur * 0.24)
+    ctx, t,
+    Math.max(2200, freq * 2.1), 1.1,
+    vol * 0.95, Math.min(0.028, dur * 0.24)
   );
 
   // Defined woodblock body.
-  playToneBurst(
-    ctx,
-    t + 0.001,
-    freq,
-    'triangle',
-    vol * 0.68,
-    Math.min(0.04, dur * 0.22),
-    dur + 0.11,
-    1.035,
-    -8
-  );
+  playToneBurst(ctx, t + 0.001, freq, 'triangle',
+    vol * 0.68, Math.min(0.04, dur * 0.22), dur + 0.11, 1.035, -8);
 
-  playToneBurst(
-    ctx,
-    t + 0.0014,
-    freq * 1.012,
-    'triangle',
-    vol * 0.27,
-    Math.min(0.046, dur * 0.24),
-    dur + 0.12,
-    1.02,
-    11
-  );
+  playToneBurst(ctx, t + 0.0014, freq * 1.012, 'triangle',
+    vol * 0.27, Math.min(0.046, dur * 0.24), dur + 0.12, 1.02, 11);
 
   // Small overtone so the knock reads as tuned, but not like a clean note.
-  playToneBurst(
-    ctx,
-    t + 0.0015,
-    freq * 1.86,
-    'sine',
-    vol * 0.1,
-    Math.min(0.03, dur * 0.18),
-    dur * 0.82,
-    1.018,
-    6
-  );
+  playToneBurst(ctx, t + 0.0015, freq * 1.86, 'sine',
+    vol * 0.1, Math.min(0.03, dur * 0.18), dur * 0.82, 1.018, 6);
 
   // Resonant shell noise around the body pitch.
-  playFilteredNoiseBurst(
-    ctx,
-    t + 0.002,
-    freq,
-    1.7,
-    vol * 0.3,
-    dur + 0.08
-  );
+  playFilteredNoiseBurst(ctx, t + 0.002, freq, 1.7, vol * 0.3, dur + 0.08);
 
   // Secondary resonance to add body and slight sustain.
-  playFilteredNoiseBurst(
-    ctx,
-    t + 0.003,
-    freq * 1.42,
-    2.1,
-    vol * 0.18,
-    dur + 0.04
-  );
+  playFilteredNoiseBurst(ctx, t + 0.003, freq * 1.42, 2.1, vol * 0.18, dur + 0.04);
 
   // Soft low-mid thump so the hit feels solid without sounding melodic.
-  playFilteredNoiseBurst(
-    ctx,
-    t + 0.001,
-    Math.max(420, freq * 0.62),
-    1.4,
-    vol * 0.16,
-    Math.min(0.11, dur * 0.7)
-  );
+  playFilteredNoiseBurst(ctx, t + 0.001,
+    Math.max(420, freq * 0.62), 1.4, vol * 0.16, Math.min(0.11, dur * 0.7));
 }
 
 const MAIN_SND: Record<number, [number, number, number]> = {
@@ -278,7 +282,6 @@ function sched(): void {
   while (S.nextT < S.actx!.currentTime + AHEAD) {
     schedBeat(S.nextT, S.curBeat, beatDur);
     S.setNextT(S.nextT + beatDur);
-
     S.setCurBeat((S.curBeat + 1) % S.sn);
   }
   S.setSchID(setTimeout(sched, LOOK));
@@ -304,5 +307,6 @@ export function stopMetronome(): void {
     S.setSchID(null);
   }
   setOutputLevel(0);
+  stopKeepAlive();
   S.vq.length = 0;
 }

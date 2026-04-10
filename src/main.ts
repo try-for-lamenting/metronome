@@ -1,6 +1,6 @@
 import './style.css';
 import * as S from './state';
-import { installAudioUnlock, startMetronome, stopMetronome } from './audio';
+import { installAudioUnlock, nudgeAudioFromGesture, startMetronome, stopMetronome } from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
 import { pendBeat, pendToEdge, startPendulum } from './pendulum';
@@ -19,9 +19,9 @@ import { largeBpmNoteIcon } from './glyphs';
 
 // ─── Tempo names ─────────────────────────────────────────────────────────────
 const TN: [number, number, string][] = [
-  [20,40,'Grave'],[40,60,'Largo'],[60,66,'Larghetto'],[66,76,'Adagio'],
-  [76,108,'Andante'],[108,120,'Moderato'],[120,156,'Allegro'],[156,176,'Vivace'],
-  [176,200,'Presto'],[200,999,'Prestissimo'],
+  [20, 40, 'Grave'], [40, 60, 'Largo'], [60, 66, 'Larghetto'], [66, 76, 'Adagio'],
+  [76, 108, 'Andante'], [108, 120, 'Moderato'], [120, 156, 'Allegro'], [156, 176, 'Vivace'],
+  [176, 200, 'Presto'], [200, 999, 'Prestissimo'],
 ];
 function tname(b: number): string {
   for (const [a, c, n] of TN) if (b >= a && b < c) return n;
@@ -392,6 +392,7 @@ function boot(): void {
   const onPlayPress = (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
+    nudgeAudioFromGesture();
     togglePlay();
   };
   pbtn.addEventListener('pointerdown', e => e.stopPropagation());
