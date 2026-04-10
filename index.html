@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>METRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="app">
+  <div class="page page-main active" id="metronomePage">
+    <!-- TOP PANEL -->
+    <div class="panel">
+      <div class="hrow">
+        <div class="bgrp">
+          <div class="clbl pk">TEMPO</div>
+          <div class="brow">
+            <div class="bnote-wrap" id="noteIcon"></div>
+            <div>
+              <div style="display:flex;align-items:center;gap:5px">
+                <div class="bnum" id="bnum">120</div>
+                <div class="varr">
+                  <div class="ab v" id="bup">▲</div>
+                  <div class="ab v" id="bdn">▼</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tlbl" id="tlbl">Allegro</div>
+        </div>
+        <div class="sgrp">
+          <div class="clbl cy">SIGNATURE</div>
+          <div class="sigdisp" id="sigdisp">4/4</div>
+        </div>
+        <div class="sdgrp">
+          <div class="clbl gr">SUBDIVISIONS</div>
+          <div class="sddisp" id="sddisp">0</div>
+        </div>
+      </div>
+      <div id="grid"></div>
+      <div class="pwrap">
+        <div class="ptrack"></div>
+        <div id="pball"></div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="tbar">
+      <div class="tico" id="tico-timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/>
+          <path d="M9.5 3h5M12 3v2"/>
+        </svg>
+      </div>
+      <div class="tdiv"></div>
+      <div class="tico" id="tico-vol">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </div>
+      <div class="vol-popup" id="volPopup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--tx2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0" id="volIcon">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+        <input type="range" id="volSlider" min="0" max="100" value="100">
+        <div class="vol-lbl" id="volLbl">100%</div>
+      </div>
+    </div>
+
+    <!-- DISK -->
+    <div class="dksec">
+      <div class="dkwrap">
+        <div id="dkout">
+          <div class="dkrim" id="dkr"><canvas id="dkc"></canvas></div>
+          <div class="dkin" id="dkin">
+            <div class="dkarr" id="sal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </div>
+            <div id="pbtn">
+              <svg viewBox="0 0 24 24"><path id="pp" d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="dkarr" id="sar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM -->
+    <div class="bot">
+      <div class="sigbtn" id="sigbtn">4/4</div>
+      <div class="tapbtn" id="tapbtn">TAP</div>
+    </div>
+  </div>
+
+  <div class="page page-themes" id="themesPage">
+    <div class="theme-shell">
+      <div class="theme-header">
+        <div class="theme-title">Themes</div>
+        <div class="theme-subtitle">Switch the entire metronome look instantly.</div>
+      </div>
+      <div class="theme-grid">
+        <button class="theme-card active" data-theme="deep-cyan" type="button">
+          <span class="theme-swatch swatch-deep-cyan"></span>
+          <span class="theme-card-name">Deep Cyan</span>
+          <span class="theme-card-note">Current default</span>
+        </button>
+        <button class="theme-card" data-theme="ember" type="button">
+          <span class="theme-swatch swatch-ember"></span>
+          <span class="theme-card-name">Ember</span>
+          <span class="theme-card-note">Warm red accents</span>
+        </button>
+        <button class="theme-card" data-theme="forest" type="button">
+          <span class="theme-swatch swatch-forest"></span>
+          <span class="theme-card-name">Forest Pulse</span>
+          <span class="theme-card-note">Teal-green glow</span>
+        </button>
+        <button class="theme-card" data-theme="sunset" type="button">
+          <span class="theme-swatch swatch-sunset"></span>
+          <span class="theme-card-name">Sunset Tape</span>
+          <span class="theme-card-note">Warm bright light mode</span>
+        </button>
+        <button class="theme-card" data-theme="paper-sky" type="button">
+          <span class="theme-swatch swatch-paper-sky"></span>
+          <span class="theme-card-name">Paper Sky</span>
+          <span class="theme-card-note">Clean bright light mode</span>
+        </button>
+        <button class="theme-card" data-theme="soft-stone" type="button">
+          <span class="theme-swatch swatch-soft-stone"></span>
+          <span class="theme-card-name">Soft Stone</span>
+          <span class="theme-card-note">Warm light studio look</span>
+        </button>
+      </div>
+      <div class="theme-tip">Use the left nav icon to return to the metronome.</div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nv on" id="navHome">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 3 5 21 19 21"/><line x1="12" y1="3" x2="12" y2="21"/>
+        <line x1="8.5" y1="13" x2="15.5" y2="13"/>
+        <circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="nv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </div>
+    <div class="nv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/>
+        <path d="M9.5 3h5M12 3v2"/>
+      </svg>
+    </div>
+    <div class="nv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+        <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+      </svg>
+    </div>
+    <div class="nv" id="navThemes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3c-5 0-9 4-9 9s4 9 9 9h1.2c1.1 0 1.8-1 1.5-2.1-.2-.8.4-1.6 1.2-1.6h1.8c2.4 0 4.3-1.9 4.3-4.3C23 7.5 18.5 3 12 3z"/>
+        <circle cx="7.8" cy="11.2" r="1.2"/>
+        <circle cx="11.2" cy="7.8" r="1.2"/>
+        <circle cx="16.1" cy="9.3" r="1.2"/>
+        <circle cx="17" cy="14.1" r="1.2"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- Automator HUD -->
+<div id="autoHud">
+  <div class="hud-top">
+    <div class="hud-name" id="hudName">SESSION</div>
+    <div class="hud-bpm" id="hudBpm">120</div>
+  </div>
+  <div class="hud-stats">
+    <div class="hud-stat"><div class="hud-stat-val" id="hudBars">—</div><div class="hud-stat-lbl">Measures Left</div></div>
+    <div class="hud-stat"><div class="hud-stat-val" id="hudPhase">—</div><div class="hud-stat-lbl">Phase</div></div>
+    <div class="hud-stat"><div class="hud-stat-val" id="hudTime">—</div><div class="hud-stat-lbl">Time Left</div></div>
+  </div>
+  <div class="hud-bars" id="hudBarViz"></div>
+  <div class="hud-controls">
+    <div class="hud-btn hud-pause" id="hudPause">Pause</div>
+    <div class="hud-btn hud-end" id="hudEnd">End</div>
+  </div>
+</div>
+
+<!-- SIGNATURE DIALOG -->
+<div class="overlay" id="sigOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <div style="width:28px"></div>
+      <div class="sheet-title">TIME SIGNATURE</div>
+      <div class="sheet-close" id="sigClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+    </div>
+    <div class="sig-controls">
+      <div class="sig-part">
+        <div class="sig-btns"><div class="scb" id="sndn">−</div><div class="scb" id="snup">+</div></div>
+        <div class="sig-val" id="snv">4</div>
+        <div class="sig-lbl bright">BEATS</div>
+      </div>
+      <div class="sig-slash">/</div>
+      <div class="sig-part">
+        <div class="sig-btns"><div class="scb" id="sddn">−</div><div class="scb" id="sdup">+</div></div>
+        <div class="sig-val" id="sdv">4</div>
+        <div class="sig-lbl bright">NOTE VALUE</div>
+      </div>
+    </div>
+    <div class="section-lbl large">ACCENTS PER BEAT</div>
+    <div class="accents-row" id="accentsRow"></div>
+    <div class="nav-btn" id="openSubdiv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      </svg>
+      <span style="flex:1">Subdivisions</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- SUBDIVISIONS DIALOG -->
+<div class="overlay" id="subdivOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <div class="sheet-back" id="backToSig">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </div>
+      <div class="sheet-title">SUBDIVISIONS</div>
+      <div class="sheet-close" id="subdivClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+    </div>
+    <canvas id="subdivCanvas"></canvas>
+    <div class="sub-tracks" id="subTrackList"></div>
+    <div class="add-row" id="addTrackBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--cy)" stroke-width="2.2" stroke-linecap="round" style="width:16px;height:16px">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span class="add-row-lbl">Add Division Track</span>
+    </div>
+  </div>
+</div>
+
+<!-- AUTOMATOR DIALOG -->
+<div class="overlay" id="autoOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr" id="autoHdr">
+      <div style="width:28px" id="autoBackWrap">
+        <div class="sheet-back" id="autoBack" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="sheet-title" id="autoTitle">AUTOMATOR</div>
+      <div class="sheet-close" id="autoClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+    </div>
+    <div id="autoContent"></div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
