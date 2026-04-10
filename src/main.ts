@@ -1,6 +1,6 @@
 import './style.css';
 import * as S from './state';
-import { startMetronome, stopMetronome } from './audio';
+import { installAudioUnlock, startMetronome, stopMetronome } from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
 import { pendBeat, pendToEdge, startPendulum } from './pendulum';
@@ -53,24 +53,38 @@ function renderVolumeIcon(level: number): void {
   icon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>${waves}${muted}`;
 }
 
+const BASE_THEME: Record<string, string> = {
+  '--bg': '#07101a',
+  '--sur': '#0c1826',
+  '--sur2': '#111f30',
+  '--bdr': '#1a2d42',
+  '--cy': '#00c8e0',
+  '--cy2': 'rgba(0, 200, 224, .25)',
+  '--pk': '#c04870',
+  '--pk2': '#7a2e50',
+  '--tx': '#b8d4ec',
+  '--tx2': '#4a6880',
+  '--tx3': '#1e3248',
+  '--canvas-bg': '#06101a',
+  '--bs0': '#05070c',
+  '--bs1': '#3a1428',
+  '--bs2': '#722050',
+  '--bs3': '#b83868',
+  '--active-ink': '#f3fbff',
+  '--flash-ink': '#f3fbff',
+  '--cell-flash-glow-alpha': '0.24',
+  '--cell-flash-fill-alpha': '0.24',
+  '--cell-flash-line-alpha': '0.42',
+  '--cell-flash-tail-alpha': '0.14',
+  '--slider-flash-ink': '#f3fbff',
+  '--muted-ring': '#1a2d42',
+  '--tick-major': '#d7efff',
+  '--tick-minor': '#5f829d',
+  '--tick-glow': '#00c8e0',
+};
+
 const THEMES: Record<string, Record<string, string>> = {
-  'deep-cyan': {
-    '--bg': '#07101a',
-    '--sur': '#0c1826',
-    '--sur2': '#111f30',
-    '--bdr': '#1a2d42',
-    '--cy': '#00c8e0',
-    '--cy2': 'rgba(0, 200, 224, .25)',
-    '--pk': '#c04870',
-    '--pk2': '#7a2e50',
-    '--tx': '#b8d4ec',
-    '--tx2': '#4a6880',
-    '--tx3': '#1e3248',
-    '--canvas-bg': '#06101a',
-    '--bs1': '#3a1428',
-    '--bs2': '#722050',
-    '--bs3': '#b83868',
-  },
+  'deep-cyan': {},
   ember: {
     '--bg': '#160a0d',
     '--sur': '#211015',
@@ -84,9 +98,14 @@ const THEMES: Record<string, Record<string, string>> = {
     '--tx2': '#a97f73',
     '--tx3': '#4f342f',
     '--canvas-bg': '#140c0c',
+    '--bs0': '#090506',
     '--bs1': '#48251d',
     '--bs2': '#7f3526',
     '--bs3': '#d85a31',
+    '--muted-ring': '#4f2828',
+    '--tick-major': '#ffd8c0',
+    '--tick-minor': '#a97f73',
+    '--tick-glow': '#ff8c42',
   },
   forest: {
     '--bg': '#071712',
@@ -101,9 +120,14 @@ const THEMES: Record<string, Record<string, string>> = {
     '--tx2': '#699a86',
     '--tx3': '#234238',
     '--canvas-bg': '#081410',
+    '--bs0': '#06100c',
     '--bs1': '#193b2c',
     '--bs2': '#27634c',
     '--bs3': '#34a476',
+    '--muted-ring': '#20463a',
+    '--tick-major': '#d5f5e6',
+    '--tick-minor': '#699a86',
+    '--tick-glow': '#34d7a1',
   },
   sunset: {
     '--bg': '#fff3e6',
@@ -122,6 +146,17 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bs1': '#efcdb5',
     '--bs2': '#e4a476',
     '--bs3': '#d77d43',
+    '--active-ink': '#39261b',
+    '--flash-ink': '#21140c',
+    '--cell-flash-glow-alpha': '0.28',
+    '--cell-flash-fill-alpha': '0.28',
+    '--cell-flash-line-alpha': '0.52',
+    '--cell-flash-tail-alpha': '0.18',
+    '--slider-flash-ink': '#21140c',
+    '--muted-ring': '#bda184',
+    '--tick-major': '#805427',
+    '--tick-minor': '#aa876f',
+    '--tick-glow': '#d9862a',
   },
   'paper-sky': {
     '--bg': '#edf4fb',
@@ -140,6 +175,17 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bs1': '#f1d8d8',
     '--bs2': '#eab1b0',
     '--bs3': '#de7b77',
+    '--active-ink': '#143247',
+    '--flash-ink': '#0c2030',
+    '--cell-flash-glow-alpha': '0.3',
+    '--cell-flash-fill-alpha': '0.3',
+    '--cell-flash-line-alpha': '0.54',
+    '--cell-flash-tail-alpha': '0.18',
+    '--slider-flash-ink': '#0c2030',
+    '--muted-ring': '#9fb7cf',
+    '--tick-major': '#234665',
+    '--tick-minor': '#6e8eab',
+    '--tick-glow': '#2c7fb8',
   },
   'soft-stone': {
     '--bg': '#f6efe7',
@@ -158,6 +204,17 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bs1': '#f1dfd0',
     '--bs2': '#e2b592',
     '--bs3': '#cb8557',
+    '--active-ink': '#35291f',
+    '--flash-ink': '#1f1712',
+    '--cell-flash-glow-alpha': '0.28',
+    '--cell-flash-fill-alpha': '0.28',
+    '--cell-flash-line-alpha': '0.5',
+    '--cell-flash-tail-alpha': '0.18',
+    '--slider-flash-ink': '#1f1712',
+    '--muted-ring': '#bca895',
+    '--tick-major': '#4f3c30',
+    '--tick-minor': '#8f7a68',
+    '--tick-glow': '#8a5cf6',
   },
 };
 
@@ -166,16 +223,20 @@ function showPage(page: 'metronome' | 'themes'): void {
   document.getElementById('themesPage')!.classList.toggle('active', page === 'themes');
   document.getElementById('navHome')!.classList.toggle('on', page === 'metronome');
   document.getElementById('navThemes')!.classList.toggle('on', page === 'themes');
+  if (page === 'metronome') {
+    requestAnimationFrame(() => drawDisk());
+  }
 }
 
 function applyTheme(themeName: string): void {
-  const theme = THEMES[themeName] ?? THEMES['deep-cyan'];
+  const theme = { ...BASE_THEME, ...(THEMES[themeName] ?? THEMES['deep-cyan']) };
   Object.entries(theme).forEach(([key, value]) => {
     document.documentElement.style.setProperty(key, value);
   });
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
     card.classList.toggle('active', card.dataset.theme === themeName);
   });
+  drawDisk();
   updateUI();
 }
 
@@ -197,8 +258,9 @@ function updateUI(): void {
 }
 
 // ─── Play / Stop ─────────────────────────────────────────────────────────────
-function startPlay(): void {
-  startMetronome();
+async function startPlay(): Promise<void> {
+  const started = await startMetronome();
+  if (!started) return;
   resetSweepAngle();
   startVis();
   document.getElementById('pp')!.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
@@ -266,6 +328,7 @@ function doTap(): void {
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 function boot(): void {
   S.setBs(Array.from({ length: S.sn }, (_, i) => i === 0 ? 3 : 1));
+  installAudioUnlock();
   applyTheme('deep-cyan');
   showPage('metronome');
   renderGrid();
@@ -314,7 +377,11 @@ function boot(): void {
   // Play button
   document.getElementById('pbtn')!.addEventListener('click', e => {
     e.stopPropagation();
-    S.playing ? stopPlay() : startPlay();
+    if (S.playing) {
+      stopPlay();
+      return;
+    }
+    void startPlay();
   });
 
   // Tap
@@ -352,7 +419,7 @@ function boot(): void {
   renderVolumeIcon(parseInt(volSlider.value) / 100);
   volSlider.addEventListener('input', () => {
     S.setMasterVol(parseInt(volSlider.value) / 100);
-    if (S.masterGain) S.masterGain.gain.value = S.masterVol;
+    if (S.masterGain && S.playing) S.masterGain.gain.value = S.masterVol;
     volLbl.textContent = Math.round(S.masterVol * 100) + '%';
     renderVolumeIcon(S.masterVol);
   });

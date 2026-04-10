@@ -3,19 +3,77 @@ import type { VisEvent } from './types';
 
 const LOOK = 25;
 const AHEAD = 0.12;
+const START_DELAY = 0.12;
 
-export function ensureAudio(): void {
+let audioUnlockPromise: Promise<boolean> | null = null;
+let audioPrimed = false;
+let unlockListenersInstalled = false;
+
+function setOutputLevel(level: number): void {
+  if (!S.actx || !S.masterGain) return;
+  const now = S.actx.currentTime;
+  S.masterGain.gain.cancelScheduledValues(now);
+  S.masterGain.gain.setValueAtTime(level, now);
+}
+
+function primeAudio(ctx: AudioContext): void {
+  if (audioPrimed || !S.masterGain) return;
+  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  gain.gain.value = 0.00001;
+  source.buffer = buffer;
+  source.connect(gain);
+  gain.connect(S.masterGain);
+  source.start();
+  audioPrimed = true;
+}
+
+export async function ensureAudio(): Promise<boolean> {
   if (!S.actx) {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     S.setActx(ctx);
   }
-  if (S.actx!.state === 'suspended') S.actx!.resume();
   if (!S.masterGain) {
     const g = S.actx!.createGain();
     g.gain.value = S.masterVol;
     g.connect(S.actx!.destination);
     S.setMasterGain(g);
   }
+  if (S.actx!.state !== 'running') {
+    if (!audioUnlockPromise) {
+      audioUnlockPromise = S.actx!.resume()
+        .then(() => {
+          if (S.actx?.state === 'running') primeAudio(S.actx);
+          return S.actx?.state === 'running';
+        })
+        .catch(() => false)
+        .finally(() => {
+          audioUnlockPromise = null;
+        });
+    }
+    return await audioUnlockPromise;
+  }
+  primeAudio(S.actx!);
+  return true;
+}
+
+export function installAudioUnlock(): void {
+  if (unlockListenersInstalled) return;
+  unlockListenersInstalled = true;
+
+  const tryUnlock = (): void => {
+    void ensureAudio().then(ready => {
+      if (!ready) return;
+      window.removeEventListener('pointerdown', tryUnlock);
+      window.removeEventListener('touchstart', tryUnlock);
+      window.removeEventListener('keydown', tryUnlock);
+    });
+  };
+
+  window.addEventListener('pointerdown', tryUnlock, { passive: true });
+  window.addEventListener('touchstart', tryUnlock, { passive: true });
+  window.addEventListener('keydown', tryUnlock);
 }
 
 let noiseBuffer: AudioBuffer | null = null;
@@ -188,9 +246,9 @@ const MAIN_SND: Record<number, [number, number, number]> = {
   3: [1200, 2, 0.26],
 };
 const SUB_SND: Record<number, [number, number, number]> = {
-  1: [570, 0.8, 0.15],
-  2: [750, 0.8, 0.15],
-  3: [1150, 0.8, 0.15],
+  1: [600, 0.8, 0.15],
+  2: [800, 0.8, 0.15],
+  3: [1200, 0.8, 0.15],
 };
 
 function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {
@@ -226,14 +284,17 @@ function sched(): void {
   S.setSchID(setTimeout(sched, LOOK));
 }
 
-export function startMetronome(): void {
-  ensureAudio();
+export async function startMetronome(): Promise<boolean> {
+  const ready = await ensureAudio();
+  if (!ready || !S.actx) return false;
+  setOutputLevel(S.masterVol);
   S.setPlaying(true);
   S.setCurBeat(0);
-  S.setNextT(S.actx!.currentTime + 0.05);
+  S.setNextT(S.actx.currentTime + START_DELAY);
   S.setAutoBeatInMeasure(0);
   S.vq.length = 0;
   sched();
+  return true;
 }
 
 export function stopMetronome(): void {
@@ -242,5 +303,6 @@ export function stopMetronome(): void {
     clearTimeout(S.schID);
     S.setSchID(null);
   }
+  setOutputLevel(0);
   S.vq.length = 0;
 }

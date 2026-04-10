@@ -23,6 +23,14 @@
   --bs1: #3a1428;
   --bs2: #722050;
   --bs3: #b83868;
+  --active-ink: #f3fbff;
+  --flash-ink: #f3fbff;
+  --cell-flash-glow-alpha: 0.24;
+  --cell-flash-fill-alpha: 0.24;
+  --cell-flash-line-alpha: 0.42;
+  --cell-flash-tail-alpha: 0.14;
+  --slider-flash-ink: #f3fbff;
+  --muted-ring: #1a2d42;
   --danger: #d06060;
   --accent-rest: color-mix(in srgb, var(--cy) 56%, var(--tx) 26%);
   --accent-note-1: color-mix(in srgb, var(--cy) 52%, white 14%);
@@ -253,7 +261,8 @@ body {
   height: 32px;
   border-radius: 5px;
   background: var(--bs0);
-  border: 1px solid rgba(255, 255, 255, .03);
+  border: 1px solid color-mix(in srgb, var(--muted-ring) 42%, transparent);
+  --cell-rest-shadow: none;
   cursor: pointer;
   position: relative;
   transition: background .06s, box-shadow .15s
@@ -276,40 +285,55 @@ body {
 }
 
 .cell.cur {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cy) 58%, transparent), 0 0 10px color-mix(in srgb, var(--cy) 22%, transparent);
+  --cell-rest-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cy) 62%, transparent), 0 0 10px color-mix(in srgb, var(--cy) 22%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cy) 62%, transparent), 0 0 10px color-mix(in srgb, var(--cy) 22%, transparent);
 }
 
 .cell.s1.cur {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs1) 72%, white 18%), 0 0 8px color-mix(in srgb, var(--bs1) 38%, transparent);
+  --cell-rest-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs1) 74%, var(--active-ink) 26%), 0 0 8px color-mix(in srgb, var(--bs1) 38%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs1) 74%, var(--active-ink) 26%), 0 0 8px color-mix(in srgb, var(--bs1) 38%, transparent);
 }
 
 .cell.s2.cur {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs2) 76%, white 18%), 0 0 12px color-mix(in srgb, var(--bs2) 46%, transparent);
+  --cell-rest-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs2) 78%, var(--active-ink) 22%), 0 0 12px color-mix(in srgb, var(--bs2) 46%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs2) 78%, var(--active-ink) 22%), 0 0 12px color-mix(in srgb, var(--bs2) 46%, transparent);
 }
 
 .cell.s3.cur {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs3) 78%, white 28%), 0 0 20px color-mix(in srgb, var(--bs3) 58%, transparent);
+  --cell-rest-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs3) 80%, var(--active-ink) 20%), 0 0 20px color-mix(in srgb, var(--bs3) 58%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs3) 80%, var(--active-ink) 20%), 0 0 20px color-mix(in srgb, var(--bs3) 58%, transparent);
 }
 
 @keyframes flash {
   0% {
-    filter: brightness(3.5);
-    box-shadow: 0 0 26px color-mix(in srgb, var(--cy) 28%, var(--tx) 36%), inset 0 0 14px color-mix(in srgb, var(--tx) 22%, transparent)
+    box-shadow:
+      var(--cell-rest-shadow),
+      0 0 24px color-mix(in srgb, var(--flash-ink) calc(var(--cell-flash-glow-alpha) * 100%), transparent),
+      inset 0 0 0 999px color-mix(in srgb, var(--flash-ink) calc(var(--cell-flash-fill-alpha) * 100%), transparent),
+      inset 0 0 0 2px color-mix(in srgb, var(--flash-ink) calc(var(--cell-flash-line-alpha) * 100%), transparent)
   }
 
   30% {
-    filter: brightness(2);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--bs3) 42%, transparent)
+    box-shadow:
+      var(--cell-rest-shadow),
+      0 0 18px color-mix(in srgb, var(--flash-ink) calc(var(--cell-flash-tail-alpha) * 100%), transparent),
+      inset 0 0 0 999px color-mix(in srgb, var(--flash-ink) calc((var(--cell-flash-fill-alpha) * 0.58) * 100%), transparent)
+  }
+
+  65% {
+    box-shadow:
+      var(--cell-rest-shadow),
+      0 0 12px color-mix(in srgb, var(--flash-ink) calc((var(--cell-flash-tail-alpha) * 0.62) * 100%), transparent),
+      inset 0 0 0 999px color-mix(in srgb, var(--flash-ink) calc((var(--cell-flash-fill-alpha) * 0.24) * 100%), transparent)
   }
 
   100% {
-    filter: brightness(1);
-    box-shadow: none
+    box-shadow: var(--cell-rest-shadow)
   }
 }
 
 .cell.fl {
-  animation: flash .5s ease-out forwards
+  animation: flash .68s ease-out
 }
 
 /* PENDULUM */
@@ -320,14 +344,28 @@ body {
   border-radius: 5px;
   border: 1px solid var(--bdr);
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  transition: background .12s ease, box-shadow .12s ease, border-color .12s ease
+  transition: box-shadow .12s ease, border-color .12s ease
+}
+
+.pwrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--slider-flash-ink) 22%, var(--sur) 78%), color-mix(in srgb, var(--sur) 84%, var(--slider-flash-ink) 16%));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease
 }
 
 .pwrap.is-flashing {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--tx) 26%, var(--sur) 74%), color-mix(in srgb, var(--sur) 86%, black 14%));
-  border-color: color-mix(in srgb, var(--tx) 42%, var(--bdr) 58%);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tx) 12%, transparent), 0 0 18px color-mix(in srgb, var(--tx) 14%, transparent)
+  border-color: color-mix(in srgb, var(--slider-flash-ink) 38%, var(--bdr) 62%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--slider-flash-ink) 12%, transparent), 0 0 18px color-mix(in srgb, var(--slider-flash-ink) 16%, transparent)
+}
+
+.pwrap.is-flashing::before {
+  opacity: 1
 }
 
 .ptrack {
@@ -460,14 +498,12 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    color-mix(in srgb, var(--sur2) 82%, white 12%),
-    color-mix(in srgb, var(--sur2) 80%, var(--cy) 20%) 25%,
-    color-mix(in srgb, var(--sur) 84%, black 16%) 50%,
-    color-mix(in srgb, var(--sur2) 80%, var(--cy) 20%) 75%,
-    color-mix(in srgb, var(--sur2) 82%, white 12%)
-  );
+  background: conic-gradient(from 0deg,
+      color-mix(in srgb, var(--sur2) 82%, white 12%),
+      color-mix(in srgb, var(--sur2) 80%, var(--cy) 20%) 25%,
+      color-mix(in srgb, var(--sur) 84%, black 16%) 50%,
+      color-mix(in srgb, var(--sur2) 80%, var(--cy) 20%) 75%,
+      color-mix(in srgb, var(--sur2) 82%, white 12%));
   cursor: grab;
   touch-action: none
 }
@@ -502,7 +538,7 @@ body {
   box-shadow: inset 0 3px 14px rgba(0, 0, 0, .6);
   pointer-events: all;
   gap: 4px;
-  cursor: ns-resize
+  cursor: pointer
 }
 
 .dkarr {
@@ -657,7 +693,7 @@ body {
 
 .theme-subtitle {
   font-size: 14px;
-  color: var(--tx2)
+  color: color-mix(in srgb, var(--tx) 78%, var(--tx2) 22%)
 }
 
 .theme-grid {
@@ -730,19 +766,13 @@ body {
   color: var(--tx)
 }
 
-.theme-card-note {
-  display: block;
+.theme-card-default {
+  margin-left: auto;
+  font-family: 'Orbitron', monospace;
   font-size: 12px;
-  color: var(--tx2);
-  margin-top: 3px
-}
-
-.theme-tip {
-  margin-top: auto;
-  font-size: 12px;
-  color: var(--tx2);
-  text-align: center;
-  letter-spacing: .4px
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--cy) 76%, var(--tx) 24%)
 }
 
 .nv {
@@ -1148,7 +1178,7 @@ body {
 
 .sb0 {
   background: transparent;
-  border-color: #1a2d42
+  border-color: var(--muted-ring)
 }
 
 .sb1 {
