@@ -717,6 +717,278 @@ body {
   overflow: auto
 }
 
+.tool-shell {
+  flex: 1;
+  margin: 0 10px 10px;
+  padding: 16px;
+  border: 1px solid var(--bdr);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, white 12%, transparent), transparent 35%),
+    linear-gradient(180deg, color-mix(in srgb, var(--sur) 96%, transparent), color-mix(in srgb, var(--sur2) 94%, var(--bg) 6%));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto
+}
+
+.tool-shell button,
+.tool-shell input {
+  font-family: 'Rajdhani', sans-serif
+}
+
+.tool-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px
+}
+
+.tool-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  color: var(--cy);
+  letter-spacing: 1.3px
+}
+
+.tool-subtitle {
+  font-size: 13px;
+  color: color-mix(in srgb, var(--tx) 78%, var(--tx2) 22%)
+}
+
+.tool-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--tx2);
+  margin-bottom: 2px
+}
+
+.tool-primary-btn {
+  border: 1px solid color-mix(in srgb, var(--cy) 44%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--cy) 12%, transparent);
+  color: var(--cy);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 10px 14px;
+  cursor: pointer
+}
+
+.tool-primary-btn:active {
+  background: color-mix(in srgb, var(--cy) 20%, transparent)
+}
+
+.tuner-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+
+.a4-row {
+  display: flex;
+  gap: 6px;
+  align-items: center
+}
+
+.a4-input {
+  width: 84px;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  border-radius: 7px;
+  color: var(--cy);
+  font-family: 'Orbitron', monospace;
+  font-size: 15px;
+  text-align: center;
+  padding: 8px 6px
+}
+
+.a4-step {
+  width: 30px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--cy) 34%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--cy) 10%, transparent);
+  color: var(--cy);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.a4-step:active {
+  background: color-mix(in srgb, var(--cy) 22%, transparent)
+}
+
+.octave-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 6px
+}
+
+.octave-btn {
+  border: 1px solid color-mix(in srgb, var(--cy) 34%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--cy) 8%, transparent);
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 10px;
+  cursor: pointer
+}
+
+.octave-btn.is-on {
+  background: color-mix(in srgb, var(--cy) 26%, transparent);
+  color: var(--cy);
+  border-color: color-mix(in srgb, var(--cy) 62%, transparent)
+}
+
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 4px
+}
+
+.note-btn {
+  min-height: 52px;
+  border: 1px solid color-mix(in srgb, var(--bdr) 84%, transparent);
+  border-radius: 9px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sur2) 96%, transparent), color-mix(in srgb, var(--sur) 96%, transparent));
+  color: var(--tx);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px
+}
+
+.note-btn span {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  color: var(--cy)
+}
+
+.note-btn small {
+  font-size: 10px;
+  color: var(--tx2)
+}
+
+.note-btn:active {
+  background: color-mix(in srgb, var(--cy) 14%, transparent)
+}
+
+.timer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+
+.timer-card {
+  border: 1px solid color-mix(in srgb, var(--bdr) 84%, transparent);
+  border-radius: 10px;
+  padding: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sur2) 95%, transparent), color-mix(in srgb, var(--sur) 95%, transparent));
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+
+.timer-top-row {
+  display: flex;
+  gap: 8px
+}
+
+.timer-name {
+  flex: 1;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  border-radius: 7px;
+  color: var(--tx);
+  font-size: 14px;
+  padding: 8px 9px
+}
+
+.timer-del {
+  border: 1px solid color-mix(in srgb, var(--danger) 36%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 10px;
+  cursor: pointer
+}
+
+.timer-controls {
+  display: grid;
+  grid-template-columns: 86px 86px 1fr;
+  gap: 8px;
+  align-items: center
+}
+
+.timer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px
+}
+
+.timer-field-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--tx2);
+  text-transform: uppercase
+}
+
+.timer-num {
+  width: 100%;
+  background: var(--sur2);
+  border: 1px solid var(--bdr);
+  border-radius: 7px;
+  color: var(--cy);
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px 6px
+}
+
+.timer-display {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  color: var(--cy);
+  text-align: right;
+  letter-spacing: 1px
+}
+
+.timer-actions {
+  display: flex;
+  gap: 8px
+}
+
+.timer-btn {
+  flex: 1;
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sur2) 95%, transparent);
+  color: var(--tx);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 10px;
+  cursor: pointer
+}
+
+.timer-btn-primary {
+  border-color: color-mix(in srgb, var(--cy) 50%, transparent);
+  color: var(--cy);
+  background: color-mix(in srgb, var(--cy) 11%, transparent)
+}
+
 .theme-header {
   display: flex;
   flex-direction: column;

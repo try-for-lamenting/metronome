@@ -17,6 +17,8 @@ import {
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
 import { loadPersistedAppState, schedulePersistAppState } from './persist';
+import { initTunerPage } from './tuner';
+import { initTimersPage } from './timers';
 
 // ─── Tempo names ─────────────────────────────────────────────────────────────
 const TN: [number, number, string][] = [
@@ -219,10 +221,16 @@ const THEMES: Record<string, Record<string, string>> = {
   },
 };
 
-function showPage(page: 'metronome' | 'themes'): void {
+let activeThemeName = 'deep-cyan';
+
+function showPage(page: 'metronome' | 'themes' | 'tuner' | 'timer'): void {
   document.getElementById('metronomePage')!.classList.toggle('active', page === 'metronome');
   document.getElementById('themesPage')!.classList.toggle('active', page === 'themes');
+  document.getElementById('tunerPage')!.classList.toggle('active', page === 'tuner');
+  document.getElementById('timerPage')!.classList.toggle('active', page === 'timer');
   document.getElementById('navHome')!.classList.toggle('on', page === 'metronome');
+  document.getElementById('navTuner')!.classList.toggle('on', page === 'tuner');
+  document.getElementById('navTimer')!.classList.toggle('on', page === 'timer');
   document.getElementById('navThemes')!.classList.toggle('on', page === 'themes');
   if (page === 'metronome') {
     requestAnimationFrame(() => drawDisk());
@@ -230,6 +238,7 @@ function showPage(page: 'metronome' | 'themes'): void {
 }
 
 function applyTheme(themeName: string): void {
+  activeThemeName = themeName;
   const theme = { ...BASE_THEME, ...(THEMES[themeName] ?? THEMES['deep-cyan']) };
   Object.entries(theme).forEach(([key, value]) => {
     document.documentElement.style.setProperty(key, value);
@@ -239,6 +248,12 @@ function applyTheme(themeName: string): void {
   });
   drawDisk();
   updateUI();
+}
+
+function toggleDarkLightTheme(): void {
+  const lightThemes = new Set(['paper-sky', 'sunset', 'soft-stone']);
+  const next = lightThemes.has(activeThemeName) ? 'deep-cyan' : 'paper-sky';
+  applyTheme(next);
 }
 
 // ─── UI update ────────────────────────────────────────────────────────────────
@@ -372,6 +387,8 @@ function boot(): void {
   installAudioUnlock();
   applyTheme('deep-cyan');
   showPage('metronome');
+  initTunerPage();
+  initTimersPage();
   renderGrid();
   updateUI();
   drawDisk();
@@ -520,6 +537,9 @@ function boot(): void {
 
   // Page nav
   document.getElementById('navHome')!.addEventListener('click', () => showPage('metronome'));
+  document.getElementById('navTuner')!.addEventListener('click', () => showPage('tuner'));
+  document.getElementById('navTimer')!.addEventListener('click', () => showPage('timer'));
+  document.getElementById('navThemeToggle')!.addEventListener('click', toggleDarkLightTheme);
   document.getElementById('navThemes')!.addEventListener('click', () => showPage('themes'));
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
     card.addEventListener('click', () => applyTheme(card.dataset.theme || 'deep-cyan'));
