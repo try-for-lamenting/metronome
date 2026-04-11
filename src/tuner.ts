@@ -3,7 +3,7 @@ import * as S from './state';
 import { getReferenceTonePrefs, setReferenceTonePrefs } from './persist';
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const OCTAVES = [2, 3, 4, 5, 6];
+const OCTAVES = [2, 3, 4, 5, 6, 7, 8];
 let a4Hz = 440;
 let selectedOctave = 4;
 let activeOsc: OscillatorNode | null = null;
@@ -74,6 +74,7 @@ export function initTunerPage(): void {
   };
 
   const applyA4 = (v: number): void => {
+    stopTone();
     a4Hz = Math.max(400, Math.min(480, Math.round(v)));
     a4Input.value = String(a4Hz);
     setReferenceTonePrefs({ a4Hz, octave: selectedOctave });
@@ -88,6 +89,7 @@ export function initTunerPage(): void {
       btn.className = `octave-btn${octave === selectedOctave ? ' is-on' : ''}`;
       btn.textContent = `Oct ${octave}`;
       btn.addEventListener('click', () => {
+        stopTone();
         selectedOctave = octave;
         setReferenceTonePrefs({ a4Hz, octave: selectedOctave });
         renderOctaves();
