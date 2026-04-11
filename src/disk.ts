@@ -78,9 +78,13 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
   const rim = document.getElementById('dkr')!;
   const inner = document.getElementById('dkin')!;
   let activeTarget: HTMLElement | null = null;
+  let activeFromInner = false;
   let dragLast: number | null = null;
   let dragBpmStart = 120;
   let dragTotal = 0;
+  let pointerDownTs = 0;
+  let pointerMoved = false;
+  let tapSide: -1 | 0 | 1 = 0;
 
   const updateRotationDrag = (e: PointerEvent): void => {
     if (!activeTarget || dragLast === null) return;
@@ -91,9 +95,10 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
     if (delta > Math.PI) delta -= Math.PI * 2;
     if (delta < -Math.PI) delta += Math.PI * 2;
     dragTotal += delta;
+    if (Math.abs(dragTotal) > 0.03) pointerMoved = true;
     S.setDiskAngleDeg(S.diskAngleDeg + delta * 180 / Math.PI);
     drawDisk();
-    const db = (dragTotal / (Math.PI * 2)) * 24;
+    const db = (dragTotal / (Math.PI * 2)) * 36;
     const nb = Math.max(20, Math.min(300, Math.round(dragBpmStart + db)));
     S.setBpm(nb);
     onBpmChange(nb);
@@ -101,17 +106,36 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
   };
 
   const endRotationDrag = (): void => {
+    const heldMs = performance.now() - pointerDownTs;
+    if (activeFromInner && tapSide !== 0 && !pointerMoved && heldMs < 260) {
+      S.setBpm(S.bpm + tapSide);
+      onBpmChange(S.bpm);
+    }
+    rim.classList.remove('is-pressed');
     activeTarget = null;
+    activeFromInner = false;
     dragLast = null;
+    pointerMoved = false;
+    tapSide = 0;
   };
 
-  const beginRotationDrag = (target: HTMLElement, e: PointerEvent): void => {
+  const beginRotationDrag = (target: HTMLElement, e: PointerEvent, fromInner: boolean): void => {
     e.preventDefault();
     target.setPointerCapture(e.pointerId);
     activeTarget = target;
+    activeFromInner = fromInner;
     dragBpmStart = S.bpm;
     dragTotal = 0;
+    pointerDownTs = performance.now();
+    pointerMoved = false;
+    tapSide = 0;
+    rim.classList.add('is-pressed');
     const c = diskCtr();
+    if (fromInner) {
+      const deadZone = document.getElementById('dkout')!.offsetWidth * 0.13;
+      const dx = e.clientX - c.x;
+      tapSide = dx < -deadZone ? -1 : dx > deadZone ? 1 : 0;
+    }
     dragLast = getAng(c.x, c.y, e.clientX, e.clientY);
   };
 
@@ -121,7 +145,7 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
     const dist = Math.sqrt(dx * dx + dy * dy);
     const innerRadius = document.getElementById('dkout')!.offsetWidth * 0.40;
     if (dist < innerRadius) return;
-    beginRotationDrag(rim, e);
+    beginRotationDrag(rim, e, false);
   });
 
   rim.addEventListener('pointermove', updateRotationDrag);
@@ -130,8 +154,8 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
 
   inner.addEventListener('pointerdown', e => {
     const target = e.target instanceof Element ? e.target : null;
-    if (target?.closest('#pbtn, #sal, #sar')) return;
-    beginRotationDrag(inner, e);
+    if (target?.closest('#pbtn')) return;
+    beginRotationDrag(inner, e, true);
   });
 
   inner.addEventListener('pointermove', updateRotationDrag);

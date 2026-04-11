@@ -1,5 +1,6 @@
 import * as S from './state';
 import type { AutoSession } from './types';
+import { schedulePersistAppState } from './persist';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ export function renderAutoList(): void {
     const totalMeasures = phases * sess.period;
     const secPerMeasure = (60 / ((sess.startBpm + sess.endBpm) / 2)) * S.sn;
     const totalSec = totalMeasures * secPerMeasure;
-    item.innerHTML = `<div class="auto-item-name">${sess.name}</div><div class="auto-item-info">${sess.startBpm}→${sess.endBpm} BPM · ${totalMeasures} measures · ~${formatTime(totalSec)}</div>`;
+    item.innerHTML = `<div class="auto-item-name">${sess.name}</div><div class="auto-item-info">${sess.startBpm} to ${sess.endBpm} BPM · ${totalMeasures} measures · ${formatTime(totalSec)}</div>`;
     item.addEventListener('click', () => renderAutoEdit(i));
     list.appendChild(item);
   });
@@ -49,6 +50,7 @@ export function renderAutoList(): void {
   addBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="width:16px;height:16px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Session`;
   addBtn.addEventListener('click', () => {
     S.autoSessions.push({ name: 'Session ' + (S.autoSessions.length + 1), startBpm: 80, endBpm: 160, period: 8, incr: 5 });
+    schedulePersistAppState();
     renderAutoEdit(S.autoSessions.length - 1);
   });
   c.appendChild(addBtn);
@@ -129,7 +131,11 @@ export function renderAutoEdit(idx: number): void {
   nameWrap.innerHTML = `<label>Session Name</label>`;
   const nameInp = document.createElement('input');
   nameInp.type = 'text'; nameInp.value = sess.name;
-  nameInp.addEventListener('input', () => { sess.name = nameInp.value; updateEstimate(); });
+  nameInp.addEventListener('input', () => {
+    sess.name = nameInp.value;
+    updateEstimate();
+    schedulePersistAppState();
+  });
   nameWrap.appendChild(nameInp);
   c.appendChild(nameWrap);
 
@@ -139,12 +145,20 @@ export function renderAutoEdit(idx: number): void {
 
   const startWrap = document.createElement('div'); startWrap.className = 'auto-field';
   const startLbl = document.createElement('label'); startLbl.textContent = 'Start BPM';
-  const startStepper = makeNumStepper(sess.startBpm, 20, 299, 1, v => { sess.startBpm = v; updateEstimate(); }, true);
+  const startStepper = makeNumStepper(sess.startBpm, 20, 299, 1, v => {
+    sess.startBpm = v;
+    updateEstimate();
+    schedulePersistAppState();
+  }, true);
   startWrap.appendChild(startLbl); startWrap.appendChild(startStepper);
 
   const endWrap = document.createElement('div'); endWrap.className = 'auto-field';
   const endLbl = document.createElement('label'); endLbl.textContent = 'End BPM';
-  const endStepper = makeNumStepper(sess.endBpm, 21, 300, 1, v => { sess.endBpm = v; updateEstimate(); }, true);
+  const endStepper = makeNumStepper(sess.endBpm, 21, 300, 1, v => {
+    sess.endBpm = v;
+    updateEstimate();
+    schedulePersistAppState();
+  }, true);
   endWrap.appendChild(endLbl); endWrap.appendChild(endStepper);
 
   bpmRow.appendChild(startWrap); bpmRow.appendChild(endWrap);
@@ -156,12 +170,20 @@ export function renderAutoEdit(idx: number): void {
 
   const periodWrap = document.createElement('div'); periodWrap.className = 'auto-field';
   const periodLbl = document.createElement('label'); periodLbl.textContent = 'Measures / Step';
-  const periodStepper = makeNumStepper(sess.period, 1, 256, 1, v => { sess.period = v; updateEstimate(); });
+  const periodStepper = makeNumStepper(sess.period, 1, 256, 1, v => {
+    sess.period = v;
+    updateEstimate();
+    schedulePersistAppState();
+  });
   periodWrap.appendChild(periodLbl); periodWrap.appendChild(periodStepper);
 
   const incrWrap = document.createElement('div'); incrWrap.className = 'auto-field';
   const incrLbl = document.createElement('label'); incrLbl.textContent = 'BPM Increase';
-  const incrStepper = makeNumStepper(sess.incr, 1, 50, 1, v => { sess.incr = v; updateEstimate(); });
+  const incrStepper = makeNumStepper(sess.incr, 1, 50, 1, v => {
+    sess.incr = v;
+    updateEstimate();
+    schedulePersistAppState();
+  });
   incrWrap.appendChild(incrLbl); incrWrap.appendChild(incrStepper);
 
   piRow.appendChild(periodWrap); piRow.appendChild(incrWrap);
@@ -210,7 +232,11 @@ export function renderAutoEdit(idx: number): void {
   const delBtn = document.createElement('div');
   delBtn.className = 'auto-del-btn';
   delBtn.textContent = 'Delete Session';
-  delBtn.addEventListener('click', () => { S.autoSessions.splice(idx, 1); renderAutoList(); });
+  delBtn.addEventListener('click', () => {
+    S.autoSessions.splice(idx, 1);
+    schedulePersistAppState();
+    renderAutoList();
+  });
   c.appendChild(delBtn);
 }
 

@@ -1,6 +1,7 @@
 import * as S from './state';
 import { accentIconSVG } from './glyphs';
 import { renderGrid } from './grid';
+import { schedulePersistAppState } from './persist';
 
 export function openSig(): void {
   document.getElementById('sigOverlay')!.classList.add('open');
@@ -28,6 +29,7 @@ export function sigChange(): void {
   if (S.curBeat >= S.sn) S.setCurBeat(0);
   renderGrid();
   renderAccents();
+  schedulePersistAppState();
 }
 
 export function renderAccents(): void {
@@ -48,9 +50,9 @@ export function renderAccents(): void {
     cell.appendChild(numEl);
     cell.addEventListener('click', () => {
       S.setBsAt(i, (S.bs[i] + 1) % 4);
-      if (i === 0 && S.bs[i] === 0) S.setBsAt(i, 1);
       renderGrid();
       renderAccents();
+      schedulePersistAppState();
     });
     row.appendChild(cell);
   }

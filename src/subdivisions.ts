@@ -2,7 +2,7 @@ import * as S from './state';
 
 // Sweep tracking
 let prevSweepAngle = -Math.PI / 2;
-let sweepFlashUntil: Map<string, number> = new Map(); // key="ti:di" → expire time ms
+let sweepFlashUntil: Map<string, number> = new Map();
 
 function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();

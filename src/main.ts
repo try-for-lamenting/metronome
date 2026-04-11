@@ -16,6 +16,7 @@ import {
 } from './automator';
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
+import { loadPersistedAppState, schedulePersistAppState } from './persist';
 
 // ─── Tempo names ─────────────────────────────────────────────────────────────
 const TN: [number, number, string][] = [
@@ -255,6 +256,7 @@ function updateUI(): void {
   wrap.innerHTML = largeBpmNoteIcon(S.sd);
   wrap.style.color = 'var(--cy)';
   if (updateHud) updateHud();
+  schedulePersistAppState();
 }
 
 // ─── Play / Stop ─────────────────────────────────────────────────────────────
@@ -338,9 +340,35 @@ function doTap(): void {
   if (taps.length > 8) taps.shift();
 }
 
+let bpmPadValue = '';
+
+function closeBpmPad(): void {
+  document.getElementById('bpmPadOverlay')?.classList.remove('open');
+}
+
+function openBpmPad(): void {
+  bpmPadValue = String(S.bpm);
+  const display = document.getElementById('bpmPadDisplay');
+  if (display) display.textContent = bpmPadValue;
+  document.getElementById('bpmPadOverlay')?.classList.add('open');
+}
+
+function syncBpmPadDisplay(): void {
+  const display = document.getElementById('bpmPadDisplay');
+  if (!display) return;
+  display.textContent = bpmPadValue || '0';
+}
+
+function applyBpmPadValue(): void {
+  if (!bpmPadValue) return;
+  S.setBpm(parseInt(bpmPadValue, 10));
+  updateUI();
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 function boot(): void {
   S.setBs(Array.from({ length: S.sn }, (_, i) => i === 0 ? 3 : 1));
+  loadPersistedAppState();
   installAudioUnlock();
   applyTheme('deep-cyan');
   showPage('metronome');
@@ -354,25 +382,33 @@ function boot(): void {
   // BPM drag on number
   const bnumEl = document.getElementById('bnum')!;
   let bdy: number | null = null, bdstart = S.bpm;
+  let bdragged = false;
+  let bdownTs = 0;
   bnumEl.addEventListener('pointerdown', e => {
     e.preventDefault();
     bnumEl.setPointerCapture(e.pointerId);
     bdy = e.clientY; bdstart = S.bpm;
+    bdragged = false;
+    bdownTs = performance.now();
   });
   bnumEl.addEventListener('pointermove', e => {
     if (bdy === null) return;
+    if (Math.abs(bdy - e.clientY) > 3) bdragged = true;
     S.setBpm(Math.round(bdstart + (bdy - e.clientY) * 0.55));
     updateUI();
   });
-  const bEnd = () => { bdy = null; };
+  bnumEl.addEventListener('pointerup', () => {
+    const heldMs = performance.now() - bdownTs;
+    if (!bdragged && heldMs < 260) openBpmPad();
+    bdy = null;
+  });
+  const bEnd = () => { bdy = null; bdragged = false; };
   bnumEl.addEventListener('pointerup', bEnd);
   bnumEl.addEventListener('pointercancel', bEnd);
 
   // BPM step buttons
   document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); updateUI(); });
   document.getElementById('bdn')!.addEventListener('click', () => { S.setBpm(S.bpm - 1); updateUI(); });
-  document.getElementById('sal')!.addEventListener('click', () => { S.setBpm(S.bpm - 5); updateUI(); });
-  document.getElementById('sar')!.addEventListener('click', () => { S.setBpm(S.bpm + 5); updateUI(); });
 
   // Signature stepper
   const DENS = [1, 2, 4, 8, 16, 32];
@@ -406,6 +442,33 @@ function boot(): void {
 
   // Tap
   document.getElementById('tapbtn')!.addEventListener('click', doTap);
+
+  // BPM numpad
+  document.getElementById('bpmPadOverlay')!.addEventListener('click', e => {
+    if (e.target === document.getElementById('bpmPadOverlay')) closeBpmPad();
+  });
+  document.getElementById('bpmPad')!.addEventListener('click', e => e.stopPropagation());
+  document.querySelectorAll<HTMLElement>('.bpm-pad-key[data-digit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const digit = btn.dataset.digit ?? '';
+      if (!digit) return;
+      if (bpmPadValue === '0') bpmPadValue = digit;
+      else if (bpmPadValue.length < 3) bpmPadValue += digit;
+      syncBpmPadDisplay();
+    });
+  });
+  document.getElementById('bpmPadClear')!.addEventListener('click', () => {
+    bpmPadValue = '';
+    syncBpmPadDisplay();
+  });
+  document.getElementById('bpmPadBack')!.addEventListener('click', () => {
+    bpmPadValue = bpmPadValue.slice(0, -1);
+    syncBpmPadDisplay();
+  });
+  document.getElementById('bpmPadOk')!.addEventListener('click', () => {
+    applyBpmPadValue();
+    closeBpmPad();
+  });
 
   // Sig dialog
   document.getElementById('sigbtn')!.addEventListener('click', openSig);
