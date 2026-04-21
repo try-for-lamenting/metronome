@@ -1,5 +1,5 @@
 import * as S from './state';
-import type { AutoSession, NoteValue } from './types';
+import type { AutoSession, NoteValue, SubTrack } from './types';
 
 const STORAGE_KEY = 'metronome.app.v1';
 const VALID_DENS: NoteValue[] = [1, 2, 4, 8, 16, 32];
@@ -22,6 +22,7 @@ interface PersistedState {
   sn?: number;
   sd?: number;
   bs?: number[];
+  subTracks?: SubTrack[];
   autoSessions?: AutoSession[];
   timers?: PersistedTimer[];
   referenceTones?: ReferenceTonePrefs;
@@ -99,6 +100,24 @@ function sanitizeReferenceTonePrefs(raw: unknown): ReferenceTonePrefs {
   };
 }
 
+function sanitizeSubTracks(raw: unknown): SubTrack[] {
+  if (!Array.isArray(raw)) return [];
+  const out: SubTrack[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const obj = item as Record<string, unknown>;
+    const div = clampInt(obj.div, 2, 16);
+    if (div === null) continue;
+    const rawStates = Array.isArray(obj.states) ? obj.states : [];
+    const states = Array.from({ length: div }, (_, i) => {
+      const value = clampInt(rawStates[i], 0, 3);
+      return value ?? (i === 0 ? 0 : 1);
+    });
+    out.push({ div, states });
+  }
+  return out;
+}
+
 export function loadPersistedAppState(): void {
   try {
     const txt = localStorage.getItem(STORAGE_KEY);
@@ -117,6 +136,7 @@ export function loadPersistedAppState(): void {
     if (bpm !== null) S.setBpm(bpm);
 
     S.setBs(normalizeBeats(S.sn, parsed.bs));
+    S.setSubTracks(sanitizeSubTracks(parsed.subTracks));
 
     const autoSessions = sanitizeSessions(parsed.autoSessions);
     if (autoSessions.length) S.setAutoSessions(autoSessions);
@@ -135,6 +155,7 @@ export function persistAppStateNow(): void {
       sn: S.sn,
       sd: S.sd,
       bs: S.bs.slice(0, S.sn).map(v => Math.max(0, Math.min(3, Math.round(v)))),
+      subTracks: sanitizeSubTracks(S.subTracks),
       autoSessions: sanitizeSessions(S.autoSessions),
       timers: sanitizeTimers(persistedTimers),
       referenceTones: sanitizeReferenceTonePrefs(referenceTonePrefs),

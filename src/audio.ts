@@ -265,9 +265,9 @@ const MAIN_SND: Record<number, [number, number, number]> = {
   3: [1200, 5, 0.26],
 };
 const SUB_SND: Record<number, [number, number, number]> = {
-  1: [300, 3, 0.15],
-  2: [600, 3, 0.15],
-  3: [1200, 3, 0.15],
+  1: [300, 2.5, 0.15],
+  2: [600, 2.5, 0.15],
+  3: [1200, 2.5, 0.15],
 };
 
 function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {

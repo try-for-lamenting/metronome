@@ -512,6 +512,7 @@ function boot(): void {
     const states = Array(div).fill(0);
     for (let i = 1; i < div; i++) states[i] = 1;
     S.subTracks.push({ div, states });
+    schedulePersistAppState();
     renderSubdivTracks(); drawSubdivCanvas();
     updateUI();
   });

@@ -147,7 +147,7 @@ function resetLiveTunerDisplay(message = 'Start the tuner, then play a steady no
   refs.liveTunerState.classList.toggle('is-live', liveTunerRunning && !error);
   refs.liveTunerState.classList.toggle('is-error', error);
   refs.liveTunerNote.textContent = '--';
-  refs.liveTunerOctave.textContent = '--';
+  refs.liveTunerOctave.textContent = '—';
   refs.liveTunerFreq.textContent = '0.0 Hz';
   refs.liveTunerTarget.textContent = '--';
   refs.liveTunerCents.textContent = '--';
@@ -201,7 +201,7 @@ function updateLiveTunerNoPitch(rms: number): void {
     setLiveTunerValueActivity(false);
   } else {
     refs.liveTunerNote.textContent = '--';
-    refs.liveTunerOctave.textContent = '--';
+    refs.liveTunerOctave.textContent = '—';
     refs.liveTunerFreq.textContent = '0.0 Hz';
     refs.liveTunerTarget.textContent = '--';
     refs.liveTunerCents.textContent = '--';

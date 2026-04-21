@@ -1087,6 +1087,7 @@ body {
   margin-left: 3px;
   font-family: 'Orbitron', monospace;
   font-size: 15px;
+  white-space: nowrap;
   color: color-mix(in srgb, var(--cy) 78%, white 8%);
   transition: color .22s ease
 }
@@ -1580,6 +1581,13 @@ body {
 
   .theme-shell {
     margin: 0 10px 0 0
+  }
+
+  .tuner-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px
   }
 
   .hrow {
