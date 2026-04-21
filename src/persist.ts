@@ -92,7 +92,7 @@ function sanitizeReferenceTonePrefs(raw: unknown): ReferenceTonePrefs {
   if (!raw || typeof raw !== 'object') return { a4Hz: 440, octave: 4 };
   const obj = raw as Record<string, unknown>;
   const a4Hz = clampInt(obj.a4Hz, 400, 480);
-  const octave = clampInt(obj.octave, 2, 7);
+  const octave = clampInt(obj.octave, 3, 7);
   return {
     a4Hz: a4Hz ?? 440,
     octave: octave ?? 4,

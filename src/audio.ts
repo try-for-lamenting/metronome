@@ -9,6 +9,7 @@ let audioUnlockPromise: Promise<boolean> | null = null;
 let audioPrimed = false;
 let unlockListenersInstalled = false;
 let keepAliveSource: AudioBufferSourceNode | null = null;
+let outputSuppressed = false;
 
 function ensureAudioGraph(): AudioContext {
   if (!S.actx || S.actx.state === 'closed') {
@@ -19,18 +20,32 @@ function ensureAudioGraph(): AudioContext {
   }
   if (!S.masterGain || S.masterGain.context !== S.actx) {
     const g = S.actx!.createGain();
-    g.gain.value = S.masterVol;
+    g.gain.value = outputSuppressed ? 0 : S.masterVol;
     g.connect(S.actx!.destination);
     S.setMasterGain(g);
   }
   return S.actx!;
 }
 
-function setOutputLevel(level: number): void {
+function applyOutputLevel(): void {
   if (!S.actx || !S.masterGain) return;
   const now = S.actx.currentTime;
   S.masterGain.gain.cancelScheduledValues(now);
-  S.masterGain.gain.setValueAtTime(level, now);
+  S.masterGain.gain.setValueAtTime(outputSuppressed ? 0 : S.masterVol, now);
+}
+
+export function activateAudioOutput(): void {
+  outputSuppressed = false;
+  applyOutputLevel();
+}
+
+export function suppressAudioOutput(): void {
+  outputSuppressed = true;
+  applyOutputLevel();
+}
+
+export function refreshAudioOutputLevel(): void {
+  applyOutputLevel();
 }
 
 function startKeepAlive(ctx: AudioContext): void {
@@ -245,14 +260,14 @@ function beep(t: number, freq: number, vol: number, dur: number): void {
 }
 
 const MAIN_SND: Record<number, [number, number, number]> = {
-  1: [600, 2, 0.26],
-  2: [800, 2, 0.26],
-  3: [1200, 2, 0.26],
+  1: [300, 5, 0.26],
+  2: [600, 5, 0.26],
+  3: [1200, 5, 0.26],
 };
 const SUB_SND: Record<number, [number, number, number]> = {
-  1: [600, 0.8, 0.15],
-  2: [800, 0.8, 0.15],
-  3: [1200, 0.8, 0.15],
+  1: [300, 3, 0.15],
+  2: [600, 3, 0.15],
+  3: [1200, 3, 0.15],
 };
 
 function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {
@@ -288,9 +303,9 @@ function sched(): void {
 }
 
 export async function startMetronome(): Promise<boolean> {
+  activateAudioOutput();
   const ready = await ensureAudio();
   if (!ready || !S.actx) return false;
-  setOutputLevel(S.masterVol);
   S.setPlaying(true);
   S.setCurBeat(0);
   S.setNextT(S.actx.currentTime + START_DELAY);
@@ -306,7 +321,7 @@ export function stopMetronome(): void {
     clearTimeout(S.schID);
     S.setSchID(null);
   }
-  setOutputLevel(0);
+  suppressAudioOutput();
   stopKeepAlive();
   S.vq.length = 0;
 }

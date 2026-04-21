@@ -1,6 +1,12 @@
 import './style.css';
 import * as S from './state';
-import { installAudioUnlock, nudgeAudioFromGesture, startMetronome, stopMetronome } from './audio';
+import {
+  installAudioUnlock,
+  nudgeAudioFromGesture,
+  refreshAudioOutputLevel,
+  startMetronome,
+  stopMetronome,
+} from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
 import { pendBeat, pendToEdge, startPendulum } from './pendulum';
@@ -17,7 +23,7 @@ import {
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
 import { loadPersistedAppState, schedulePersistAppState } from './persist';
-import { initTunerPage } from './tuner';
+import { initTunerPage, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
 
 // ─── Tempo names ─────────────────────────────────────────────────────────────
@@ -232,6 +238,7 @@ function showPage(page: 'metronome' | 'themes' | 'tuner' | 'timer'): void {
   document.getElementById('navTuner')!.classList.toggle('on', page === 'tuner');
   document.getElementById('navTimer')!.classList.toggle('on', page === 'timer');
   document.getElementById('navThemes')!.classList.toggle('on', page === 'themes');
+  setTunerPageActive(page === 'tuner');
   if (page === 'metronome') {
     requestAnimationFrame(() => drawDisk());
   }
@@ -519,7 +526,7 @@ function boot(): void {
   renderVolumeIcon(parseInt(volSlider.value) / 100);
   volSlider.addEventListener('input', () => {
     S.setMasterVol(parseInt(volSlider.value) / 100);
-    if (S.masterGain && S.playing) S.masterGain.gain.value = S.masterVol;
+    refreshAudioOutputLevel();
     volLbl.textContent = Math.round(S.masterVol * 100) + '%';
     renderVolumeIcon(S.masterVol);
   });
