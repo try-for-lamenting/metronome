@@ -1,4 +1,5 @@
 import * as S from './state';
+import { playWheelTicks } from './audio';
 
 function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -77,6 +78,8 @@ function getAng(cx: number, cy: number, ex: number, ey: number): number {
 export function setupDiskDrag(onBpmChange: (b: number) => void): void {
   const rim = document.getElementById('dkr')!;
   const inner = document.getElementById('dkin')!;
+  const leftArrow = document.getElementById('sal')!;
+  const rightArrow = document.getElementById('sar')!;
   let activeTarget: HTMLElement | null = null;
   let activeFromInner = false;
   let dragLast: number | null = null;
@@ -85,6 +88,28 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
   let pointerDownTs = 0;
   let pointerMoved = false;
   let tapSide: -1 | 0 | 1 = 0;
+  let arrowFlashId: number | null = null;
+
+  const flashArrow = (side: -1 | 1): void => {
+    const arrow = side < 0 ? leftArrow : rightArrow;
+    leftArrow.classList.remove('is-flashing');
+    rightArrow.classList.remove('is-flashing');
+    arrow.classList.add('is-flashing');
+    if (arrowFlashId !== null) window.clearTimeout(arrowFlashId);
+    arrowFlashId = window.setTimeout(() => {
+      arrow.classList.remove('is-flashing');
+      arrowFlashId = null;
+    }, 140);
+  };
+
+  const triggerTapSide = (side: -1 | 1): void => {
+    const prevBpm = S.bpm;
+    S.setBpm(prevBpm + side);
+    if (S.bpm === prevBpm) return;
+    onBpmChange(S.bpm);
+    playWheelTicks(S.bpm - prevBpm);
+    flashArrow(side);
+  };
 
   const updateRotationDrag = (e: PointerEvent): void => {
     if (!activeTarget || dragLast === null) return;
@@ -100,16 +125,19 @@ export function setupDiskDrag(onBpmChange: (b: number) => void): void {
     drawDisk();
     const db = (dragTotal / (Math.PI * 2)) * 36;
     const nb = Math.max(20, Math.min(300, Math.round(dragBpmStart + db)));
-    S.setBpm(nb);
-    onBpmChange(nb);
+    const prevBpm = S.bpm;
+    if (nb !== prevBpm) {
+      S.setBpm(nb);
+      onBpmChange(nb);
+      playWheelTicks(nb - prevBpm);
+    }
     dragLast = a;
   };
 
   const endRotationDrag = (): void => {
     const heldMs = performance.now() - pointerDownTs;
     if (activeFromInner && tapSide !== 0 && !pointerMoved && heldMs < 260) {
-      S.setBpm(S.bpm + tapSide);
-      onBpmChange(S.bpm);
+      triggerTapSide(tapSide);
     }
     rim.classList.remove('is-pressed');
     activeTarget = null;

@@ -278,6 +278,39 @@ function beep(t: number, freq: number, vol: number, dur: number): void {
     Math.max(420, freq * 0.62), 1.4, vol * 0.16, Math.min(0.11, dur * 0.7));
 }
 
+function playWheelTickAt(ctx: AudioContext, t: number): void {
+  if (!S.masterGain) return;
+
+  playFilteredNoiseBurst(ctx, t, 2550, 5, 0.26, 0.02);
+  playFilteredNoiseBurst(ctx, t + 0.0009, 1780, 3, 0.18, 0.04);
+  playFilteredNoiseBurst(ctx, t + 0.0016, 980, 1.5, 0.07, 0.055, 'highpass');
+}
+
+export function playWheelTicks(deltaSteps: number): void {
+  if ('audioSession' in navigator) {
+    (navigator as any).audioSession.type = 'playback';
+  }
+
+  const ctx = ensureAudioGraph();
+  primeAudio(ctx);
+
+  const scheduleTicks = (): void => {
+    startKeepAlive(ctx);
+    const count = Math.max(1, Math.min(Math.abs(deltaSteps), 8));
+    const start = ctx.currentTime + 0.001;
+    for (let i = 0; i < count; i++) {
+      playWheelTickAt(ctx, start + i * 0.024);
+    }
+  };
+
+  if (ctx.state === 'running') {
+    scheduleTicks();
+    return;
+  }
+
+  void ctx.resume().then(scheduleTicks).catch(() => { });
+}
+
 const MAIN_SND: Record<number, [number, number, number]> = {
   1: [300, 4, 0.26],
   2: [600, 4, 0.26],

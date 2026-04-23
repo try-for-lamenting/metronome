@@ -593,6 +593,10 @@ body {
   background: color-mix(in srgb, var(--cy) 20%, transparent)
 }
 
+.dkarr.is-flashing {
+  color: var(--cy)
+}
+
 .dkarr svg {
   width: 20px;
   height: 20px
