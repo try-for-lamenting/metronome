@@ -2,7 +2,7 @@ import * as S from './state';
 import type { AutoSession } from './types';
 import { schedulePersistAppState } from './persist';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// helpers.
 
 export function formatTime(secs: number): string {
   if (secs < 60) return Math.round(secs) + 's';
@@ -10,7 +10,7 @@ export function formatTime(secs: number): string {
   return `${m}m${s > 0 ? s + 's' : ''}`;
 }
 
-// ─── Lifecycle ────────────────────────────────────────────────────────────────
+// lifecycle.
 
 export function openAutomator(): void {
   document.getElementById('autoOverlay')!.classList.add('open');
@@ -21,7 +21,7 @@ export function closeAutomator(): void {
   document.getElementById('autoOverlay')!.classList.remove('open');
 }
 
-// ─── List view ───────────────────────────────────────────────────────────────
+// list view.
 
 export function renderAutoList(): void {
   document.getElementById('autoTitle')!.textContent = 'AUTOMATOR';
@@ -56,9 +56,9 @@ export function renderAutoList(): void {
   c.appendChild(addBtn);
 }
 
-// ─── Edit view ────────────────────────────────────────────────────────────────
+// edit view.
 
-/** Build a compact numeric stepper: [−] [input] [+] with optional tap row. */
+// compact number stepper.
 function makeNumStepper(
   value: number,
   min: number,
@@ -125,7 +125,7 @@ export function renderAutoEdit(idx: number): void {
   const c = document.getElementById('autoContent')!;
   c.innerHTML = '';
 
-  // Name field
+  // name field.
   const nameWrap = document.createElement('div');
   nameWrap.className = 'auto-field full';
   nameWrap.innerHTML = `<label>Session Name</label>`;
@@ -139,7 +139,7 @@ export function renderAutoEdit(idx: number): void {
   nameWrap.appendChild(nameInp);
   c.appendChild(nameWrap);
 
-  // BPM row: start + end side by side
+  // start and end bpm.
   const bpmRow = document.createElement('div');
   bpmRow.className = 'auto-row';
 
@@ -164,7 +164,7 @@ export function renderAutoEdit(idx: number): void {
   bpmRow.appendChild(startWrap); bpmRow.appendChild(endWrap);
   c.appendChild(bpmRow);
 
-  // Period + Increment row
+  // period and step size.
   const piRow = document.createElement('div');
   piRow.className = 'auto-row';
 
@@ -189,12 +189,12 @@ export function renderAutoEdit(idx: number): void {
   piRow.appendChild(periodWrap); piRow.appendChild(incrWrap);
   c.appendChild(piRow);
 
-  // Error
+  // error.
   const errDiv = document.createElement('div');
   errDiv.className = 'auto-err'; errDiv.style.display = 'none';
   c.appendChild(errDiv);
 
-  // Estimate
+  // estimate.
   const estDiv = document.createElement('div');
   estDiv.className = 'auto-estimate';
   estDiv.innerHTML = `<div class="auto-estimate-val" id="estVal">—</div><div class="auto-estimate-lbl">Estimated Duration</div>`;
@@ -210,7 +210,7 @@ export function renderAutoEdit(idx: number): void {
   }
   updateEstimate();
 
-  // Save
+  // save.
   const saveBtn = document.createElement('div');
   saveBtn.className = 'auto-save-btn';
   saveBtn.textContent = 'Start Session';
@@ -240,7 +240,7 @@ export function renderAutoEdit(idx: number): void {
   c.appendChild(delBtn);
 }
 
-// ─── Runtime ─────────────────────────────────────────────────────────────────
+// runtime.
 
 let onStartPlayback: (() => void) | null = null;
 export function setOnStartPlayback(fn: () => void): void { onStartPlayback = fn; }
@@ -295,7 +295,7 @@ export function startAutomatorSession(idx: number): void {
   updateHud();
 }
 
-/** Called every completed measure from the scheduler. */
+// run once per finished measure.
 export function onMeasureComplete(): void {
   if (pendingStartIdx !== null) {
     activatePreparedSession();

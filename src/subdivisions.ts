@@ -1,9 +1,14 @@
 import * as S from './state';
 import { schedulePersistAppState } from './persist';
 
-// Sweep tracking
+// sweep tracking.
 let prevSweepAngle = -Math.PI / 2;
 let sweepFlashUntil: Map<string, number> = new Map();
+
+function refreshSubdivisionUi(): void {
+  renderSubdivTracks();
+  drawSubdivCanvas();
+}
 
 function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -33,7 +38,7 @@ export function renderSubdivTracks(): void {
     const row = document.createElement('div');
     row.className = 'sub-row';
 
-    // Div stepper
+    // division stepper.
     const stepper = document.createElement('div');
     stepper.className = 'sub-div-stepper';
     const arrows = document.createElement('div');
@@ -45,7 +50,7 @@ export function renderSubdivTracks(): void {
       track.div++;
       track.states.push(1);
       schedulePersistAppState();
-      renderSubdivTracks(); drawSubdivCanvas();
+      refreshSubdivisionUi();
     });
     const numLbl = document.createElement('div');
     numLbl.className = 'sub-divlbl'; numLbl.textContent = String(track.div);
@@ -56,7 +61,7 @@ export function renderSubdivTracks(): void {
       track.div--;
       track.states = track.states.slice(0, track.div);
       schedulePersistAppState();
-      renderSubdivTracks(); drawSubdivCanvas();
+      refreshSubdivisionUi();
     });
     arrows.appendChild(upBtn);
     arrows.appendChild(dnBtn);
@@ -77,7 +82,7 @@ export function renderSubdivTracks(): void {
         dot.addEventListener('click', () => {
           track.states[d] = (track.states[d] + 1) % 4;
           schedulePersistAppState();
-          renderSubdivTracks(); drawSubdivCanvas();
+          refreshSubdivisionUi();
         });
       }
       beats.appendChild(dot);
@@ -90,7 +95,7 @@ export function renderSubdivTracks(): void {
     del.addEventListener('click', () => {
       S.subTracks.splice(ti, 1);
       schedulePersistAppState();
-      renderSubdivTracks(); drawSubdivCanvas();
+      refreshSubdivisionUi();
       document.getElementById('sddisp')!.textContent = String(S.subTracks.length);
     });
     row.appendChild(del);
@@ -127,22 +132,22 @@ export function handleSubdivCanvasClick(e: MouseEvent): void {
     const { ti, d } = closest;
     S.subTracks[ti].states[d] = (S.subTracks[ti].states[d] + 1) % 4;
     schedulePersistAppState();
-    renderSubdivTracks(); drawSubdivCanvas();
+    refreshSubdivisionUi();
   }
 }
 
-/** Called from the vis loop — animates sweep and detects node crossings. */
+// animate the sweep and catch crossings.
 export function animateSubdivSweep(): void {
   if (!S.playing || !document.getElementById('subdivOverlay')?.classList.contains('open')) return;
   const beatDur = 60 / S.bpm;
   const now = S.actx?.currentTime ?? 0;
-  // nextT is the time of the NEXT beat; last beat was at nextT - beatDur
+  // nextt is the next beat time.
   const lastBeatT = S.nextT - beatDur;
   const elapsed = Math.max(0, now - lastBeatT);
   const frac = (elapsed % beatDur) / beatDur;
   const angle = -Math.PI / 2 + frac * Math.PI * 2;
 
-  // Check for node crossings between prevAngle and angle
+  // check crossings.
   detectSweepCrossings(prevSweepAngle, angle);
   prevSweepAngle = angle;
 
@@ -150,11 +155,11 @@ export function animateSubdivSweep(): void {
 }
 
 function angleBetween(prev: number, curr: number, target: number): boolean {
-  // Normalize all angles to [0, 2π)
+  // normalize angles.
   const norm = (a: number) => ((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   const p = norm(prev), c = norm(curr), t = norm(target);
   if (p <= c) return p <= t && t < c;
-  // Wraps around
+  // wraparound.
   return t >= p || t < c;
 }
 
@@ -187,8 +192,7 @@ export function drawSubdivCanvas(): void {
   drawSubdivCanvasWithSweep(null);
 }
 
-/** Draw pie/wedge dots for states 0–3:
- *  0 = empty ring, 1 = 1/3 fill (120°), 2 = 2/3 fill (240°), 3 = full fill (360°) */
+// draw the subdivision dot.
 function drawPieDot(
   ctx: CanvasRenderingContext2D,
   px: number, py: number, dotR: number,
@@ -198,7 +202,7 @@ function drawPieDot(
   const tx = cssVar('--tx');
   const tx2 = cssVar('--tx2');
   if (isMain) {
-    // Main beat marker: always full fill, accent-colored
+    // main beat marker.
     ctx.beginPath(); ctx.arc(px, py, dotR + 3, 0, Math.PI * 2);
     ctx.fillStyle = withAlpha(cy, 0.12); ctx.fill();
     ctx.beginPath(); ctx.arc(px, py, dotR, 0, Math.PI * 2);
@@ -211,7 +215,7 @@ function drawPieDot(
     return;
   }
 
-  // Pie fractions: 0=empty, 1=1/3, 2=2/3, 3=full
+  // fill fractions by state.
   const FRACTIONS = [0, 1 / 3, 2 / 3, 1];
   const FILL_COLS = [
     'transparent',
@@ -232,7 +236,7 @@ function drawPieDot(
   const strokeCol = STROKE_COLS[state];
   const glow = GLOWS[state];
 
-  // Outer ring always drawn
+  // outer ring.
   ctx.beginPath(); ctx.arc(px, py, dotR, 0, Math.PI * 2);
   ctx.strokeStyle = strokeCol; ctx.lineWidth = 1.8;
   if (glow > 0) { ctx.shadowBlur = glow; ctx.shadowColor = strokeCol; }
@@ -266,7 +270,7 @@ function drawSubdivCanvasWithSweep(sweepAngle: number | null): void {
   if (n === 0) {
     ctx.beginPath(); ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
     ctx.strokeStyle = withAlpha(cssVar('--cy'), 0.2); ctx.lineWidth = 1; ctx.stroke();
-    // Draw start dot
+    // start dot.
     ctx.beginPath(); ctx.arc(cx, cy - maxR, 7, 0, Math.PI * 2);
     ctx.fillStyle = cssVar('--cy');
     ctx.shadowBlur = 12; ctx.shadowColor = cssVar('--cy'); ctx.fill(); ctx.shadowBlur = 0;
@@ -279,7 +283,7 @@ function drawSubdivCanvasWithSweep(sweepAngle: number | null): void {
     const r = minR + frac * (maxR - minR);
     const hue = 180 + ti * 22;
 
-    // Sweep line
+    // sweep line.
     if (sweepAngle !== null && S.playing) {
       ctx.save();
       ctx.beginPath();
@@ -291,18 +295,18 @@ function drawSubdivCanvasWithSweep(sweepAngle: number | null): void {
       ctx.restore();
     }
 
-    // Circle ring
+    // circle ring.
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.strokeStyle = withAlpha(cssVar('--tx2'), 0.32); ctx.lineWidth = 1.2; ctx.stroke();
 
-    // Dots
+    // dots.
     const dotR = Math.max(9, sz * 0.028);
     for (let d = 0; d < track.div; d++) {
       const angle = (d / track.div) * Math.PI * 2 - Math.PI / 2;
       const px = cx + Math.cos(angle) * r;
       const py = cy + Math.sin(angle) * r;
 
-      // Check if sweep-flashed
+      // sweep flash.
       const key = `${ti}:${d}`;
       const flashExp = sweepFlashUntil.get(key);
       const isFlashing = flashExp !== undefined && performance.now() < flashExp;
@@ -316,7 +320,7 @@ function drawSubdivCanvasWithSweep(sweepAngle: number | null): void {
 
       drawPieDot(ctx, px, py, dotR, d === 0 ? 3 : (track.states[d] || 0), d === 0);
 
-      // Beat number label
+      // beat label.
       if (d > 0) {
         const labelR = dotR + 15;
         const lx = px + Math.cos(angle) * labelR, ly = py + Math.sin(angle) * labelR;

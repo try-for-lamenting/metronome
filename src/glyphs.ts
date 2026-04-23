@@ -1,5 +1,5 @@
-// SMuFL glyph path data embedded for zero-dependency inline SVG rendering.
-// All paths use fill="currentColor" so CSS color applies dynamically.
+// smufl glyph paths for inline svg.
+// fill follows currentcolor.
 
 interface GlyphData { vb: string; d: string; }
 
@@ -75,7 +75,7 @@ function measureGlyphBounds(name: string): GlyphBounds {
   return bounds;
 }
 
-/** Returns inline SVG string for a note or rest glyph. Color is inherited via CSS `color`. */
+// inline svg for a note or rest.
 export function glyphSVG(name: string, w = 24, h = 30): string {
   const g = GLYPHS[name];
   if (!g) return '';
@@ -83,17 +83,14 @@ export function glyphSVG(name: string, w = 24, h = 30): string {
   return `<svg viewBox="${vb.x} ${vb.y} ${vb.width} ${vb.height}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="${g.d}"/></svg>`;
 }
 
-/** Map note denominator (1,2,4,8,16,32) to note/rest glyph name. */
+// map note values to glyph names.
 export function noteGlyphName(denom: number, isRest: boolean): string {
   const map: Record<number, string> = { 1: 'whole', 2: 'half', 4: 'quarter', 8: '8th', 16: '16th', 32: '32nd' };
   const kind = map[denom] ?? 'quarter';
   return isRest ? `rest-${kind}` : `note-${kind}`;
 }
 
-/**
- * Returns the accent-cell icon SVG for state 0–3.
- * State 0 = rest (silent), states 1–3 = note with increasing brightness.
- */
+// accent icon for the grid state.
 export function accentIconSVG(denom: number, state: number): string {
   if (state === 0) {
     const gname = noteGlyphName(denom, true);
@@ -111,7 +108,7 @@ export function accentIconSVG(denom: number, state: number): string {
   return `<svg viewBox="${vb.x} ${vb.y} ${vb.width} ${vb.height}" width="20" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="${col}" d="${g.d}"/></svg>`;
 }
 
-/** Large note icon for the BPM display (top-left of panel). */
+// large bpm note icon.
 export function largeBpmNoteIcon(denom: number): string {
   const gname = noteGlyphName(denom, false);
   return glyphSVG(gname, 26, 34);

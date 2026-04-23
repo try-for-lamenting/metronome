@@ -28,7 +28,7 @@ import { loadPersistedAppState, schedulePersistAppState } from './persist';
 import { initTunerPage, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
 
-// ─── Tempo names ─────────────────────────────────────────────────────────────
+// tempo names.
 const TN: [number, number, string][] = [
   [20, 40, 'Grave'], [40, 60, 'Largo'], [60, 66, 'Larghetto'], [66, 76, 'Adagio'],
   [76, 108, 'Andante'], [108, 120, 'Moderato'], [120, 156, 'Allegro'], [156, 176, 'Vivace'],
@@ -103,42 +103,86 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bdr': '#4f2828',
     '--cy': '#ff8c42',
     '--cy2': 'rgba(255, 140, 66, .24)',
-    '--pk': '#ff5d73',
-    '--pk2': '#9b3849',
+    '--pk': '#ff4f5f',
+    '--pk2': '#8f2436',
     '--tx': '#f0d2ca',
     '--tx2': '#a97f73',
     '--tx3': '#4f342f',
     '--canvas-bg': '#140c0c',
     '--bs0': '#090506',
-    '--bs1': '#48251d',
-    '--bs2': '#7f3526',
-    '--bs3': '#d85a31',
+    '--bs1': '#4a181d',
+    '--bs2': '#922932',
+    '--bs3': '#ff8c42',
     '--muted-ring': '#4f2828',
     '--tick-major': '#ffd8c0',
     '--tick-minor': '#a97f73',
     '--tick-glow': '#ff8c42',
   },
-  forest: {
-    '--bg': '#071712',
-    '--sur': '#0e221b',
-    '--sur2': '#123026',
-    '--bdr': '#20463a',
-    '--cy': '#34d7a1',
-    '--cy2': 'rgba(52, 215, 161, .24)',
-    '--pk': '#77c46f',
-    '--pk2': '#46774a',
-    '--tx': '#c9ead8',
-    '--tx2': '#699a86',
-    '--tx3': '#234238',
-    '--canvas-bg': '#081410',
-    '--bs0': '#06100c',
-    '--bs1': '#193b2c',
-    '--bs2': '#27634c',
-    '--bs3': '#34a476',
-    '--muted-ring': '#20463a',
-    '--tick-major': '#d5f5e6',
-    '--tick-minor': '#699a86',
-    '--tick-glow': '#34d7a1',
+  aurora: {
+    '--bg': '#0a1020',
+    '--sur': '#11192d',
+    '--sur2': '#16233c',
+    '--bdr': '#294066',
+    '--cy': '#45dbc3',
+    '--cy2': 'rgba(69, 219, 195, .22)',
+    '--pk': '#8570ff',
+    '--pk2': '#4535a6',
+    '--tx': '#d5def6',
+    '--tx2': '#7d8aad',
+    '--tx3': '#2b3656',
+    '--canvas-bg': '#09101d',
+    '--bs0': '#060913',
+    '--bs1': '#183059',
+    '--bs2': '#3d4fb0',
+    '--bs3': '#7f74ff',
+    '--muted-ring': '#294066',
+    '--tick-major': '#e7efff',
+    '--tick-minor': '#7d8aad',
+    '--tick-glow': '#8570ff',
+  },
+  'midnight-rose': {
+    '--bg': '#140d17',
+    '--sur': '#1d1320',
+    '--sur2': '#271a2c',
+    '--bdr': '#483450',
+    '--cy': '#69a7ff',
+    '--cy2': 'rgba(105, 167, 255, .22)',
+    '--pk': '#ff62ab',
+    '--pk2': '#9a3c71',
+    '--tx': '#f0dced',
+    '--tx2': '#a78aa6',
+    '--tx3': '#47384b',
+    '--canvas-bg': '#120c15',
+    '--bs0': '#080509',
+    '--bs1': '#2b2357',
+    '--bs2': '#7a4ca1',
+    '--bs3': '#ff62ab',
+    '--muted-ring': '#483450',
+    '--tick-major': '#f8e6f7',
+    '--tick-minor': '#a78aa6',
+    '--tick-glow': '#ff62ab',
+  },
+  'moss-gold': {
+    '--bg': '#101209',
+    '--sur': '#171b11',
+    '--sur2': '#202615',
+    '--bdr': '#404b26',
+    '--cy': '#d2c24e',
+    '--cy2': 'rgba(210, 194, 78, .22)',
+    '--pk': '#4daf74',
+    '--pk2': '#2c6843',
+    '--tx': '#e9e7cb',
+    '--tx2': '#94906d',
+    '--tx3': '#3b4129',
+    '--canvas-bg': '#0e120a',
+    '--bs0': '#080904',
+    '--bs1': '#173a20',
+    '--bs2': '#2f7d42',
+    '--bs3': '#d2c24e',
+    '--muted-ring': '#404b26',
+    '--tick-major': '#f7f2cf',
+    '--tick-minor': '#94906d',
+    '--tick-glow': '#d2c24e',
   },
   sunset: {
     '--bg': '#fff3e6',
@@ -147,16 +191,16 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bdr': '#d7b896',
     '--cy': '#d9862a',
     '--cy2': 'rgba(217, 134, 42, .2)',
-    '--pk': '#d76a4f',
-    '--pk2': '#c39884',
+    '--pk': '#e86869',
+    '--pk2': '#bf7d7b',
     '--tx': '#493327',
     '--tx2': '#8a6a55',
     '--tx3': '#c0a58d',
     '--canvas-bg': '#f4e1cd',
     '--bs0': '#efe4da',
-    '--bs1': '#efcdb5',
-    '--bs2': '#e4a476',
-    '--bs3': '#d77d43',
+    '--bs1': '#f2c2aa',
+    '--bs2': '#ec9385',
+    '--bs3': '#d9862a',
     '--active-ink': '#39261b',
     '--flash-ink': '#21140c',
     '--cell-flash-glow-alpha': '0.28',
@@ -176,16 +220,16 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bdr': '#adc4db',
     '--cy': '#2c7fb8',
     '--cy2': 'rgba(44, 127, 184, .22)',
-    '--pk': '#dc6a67',
-    '--pk2': '#bf8e8a',
+    '--pk': '#ee7b86',
+    '--pk2': '#c4939a',
     '--tx': '#163248',
     '--tx2': '#5f7f99',
     '--tx3': '#8da6bc',
     '--canvas-bg': '#ddeaf6',
     '--bs0': '#e7eff7',
-    '--bs1': '#f1d8d8',
-    '--bs2': '#eab1b0',
-    '--bs3': '#de7b77',
+    '--bs1': '#d6e5f6',
+    '--bs2': '#a8c7eb',
+    '--bs3': '#ee7b86',
     '--active-ink': '#143247',
     '--flash-ink': '#0c2030',
     '--cell-flash-glow-alpha': '0.3',
@@ -205,16 +249,16 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bdr': '#c9b8a8',
     '--cy': '#8a5cf6',
     '--cy2': 'rgba(138, 92, 246, .2)',
-    '--pk': '#c97845',
-    '--pk2': '#b28b6c',
+    '--pk': '#d58a58',
+    '--pk2': '#bb8f74',
     '--tx': '#3b2d23',
     '--tx2': '#7b6a5c',
     '--tx3': '#b9aa9c',
     '--canvas-bg': '#e9ded2',
     '--bs0': '#efe8df',
-    '--bs1': '#f1dfd0',
-    '--bs2': '#e2b592',
-    '--bs3': '#cb8557',
+    '--bs1': '#ece0f8',
+    '--bs2': '#c8afe8',
+    '--bs3': '#d58a58',
     '--active-ink': '#35291f',
     '--flash-ink': '#1f1712',
     '--cell-flash-glow-alpha': '0.28',
@@ -227,9 +271,106 @@ const THEMES: Record<string, Record<string, string>> = {
     '--tick-minor': '#8f7a68',
     '--tick-glow': '#8a5cf6',
   },
+  'mint-sun': {
+    '--bg': '#f2fff4',
+    '--sur': '#ffffff',
+    '--sur2': '#dcf1e0',
+    '--bdr': '#aed2ba',
+    '--cy': '#31b77a',
+    '--cy2': 'rgba(49, 183, 122, .2)',
+    '--pk': '#f0b44e',
+    '--pk2': '#d49a48',
+    '--tx': '#17382a',
+    '--tx2': '#5f7f70',
+    '--tx3': '#96b7a4',
+    '--canvas-bg': '#dceede',
+    '--bs0': '#eaf5e8',
+    '--bs1': '#d3eed7',
+    '--bs2': '#99db9d',
+    '--bs3': '#f0b44e',
+    '--active-ink': '#143025',
+    '--flash-ink': '#10241c',
+    '--cell-flash-glow-alpha': '0.3',
+    '--cell-flash-fill-alpha': '0.3',
+    '--cell-flash-line-alpha': '0.54',
+    '--cell-flash-tail-alpha': '0.18',
+    '--slider-flash-ink': '#10241c',
+    '--muted-ring': '#99bea6',
+    '--tick-major': '#25533f',
+    '--tick-minor': '#72917f',
+    '--tick-glow': '#31b77a',
+  },
+  'lemon-ink': {
+    '--bg': '#fffce8',
+    '--sur': '#fffef7',
+    '--sur2': '#f0e8ba',
+    '--bdr': '#d3ca8b',
+    '--cy': '#345f88',
+    '--cy2': 'rgba(52, 95, 136, .18)',
+    '--pk': '#d8ab1d',
+    '--pk2': '#b78815',
+    '--tx': '#273240',
+    '--tx2': '#6d7783',
+    '--tx3': '#a7ad9a',
+    '--canvas-bg': '#efe8be',
+    '--bs0': '#f3eed2',
+    '--bs1': '#e7df9d',
+    '--bs2': '#d6bf53',
+    '--bs3': '#345f88',
+    '--active-ink': '#1b2632',
+    '--flash-ink': '#121a22',
+    '--cell-flash-glow-alpha': '0.28',
+    '--cell-flash-fill-alpha': '0.28',
+    '--cell-flash-line-alpha': '0.52',
+    '--cell-flash-tail-alpha': '0.18',
+    '--slider-flash-ink': '#121a22',
+    '--muted-ring': '#c9bf85',
+    '--tick-major': '#30485f',
+    '--tick-minor': '#7f8876',
+    '--tick-glow': '#345f88',
+  },
 };
 
+const DARK_THEMES = ['deep-cyan', 'ember', 'aurora', 'midnight-rose', 'moss-gold'] as const;
+const LIGHT_THEMES = ['sunset', 'paper-sky', 'soft-stone', 'mint-sun', 'lemon-ink'] as const;
+const LIGHT_THEME_SET = new Set<string>(LIGHT_THEMES);
 let activeThemeName = 'deep-cyan';
+const SUN_ICON = `
+  <circle cx="12" cy="12" r="4" />
+  <line x1="12" y1="2" x2="12" y2="5" />
+  <line x1="12" y1="19" x2="12" y2="22" />
+  <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
+  <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+  <line x1="2" y1="12" x2="5" y2="12" />
+  <line x1="19" y1="12" x2="22" y2="12" />
+  <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
+  <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+`;
+const MOON_ICON = `
+  <path d="M20 15.2a8.4 8.4 0 1 1-11.2-11.2a7 7 0 0 0 11.2 11.2z" />
+`;
+
+function pickRandomTheme(themeNames: readonly string[], exclude?: string): string {
+  const pool = exclude ? themeNames.filter(name => name !== exclude) : [...themeNames];
+  const choices = pool.length ? pool : [...themeNames];
+  return choices[Math.floor(Math.random() * choices.length)] ?? 'deep-cyan';
+}
+
+function resolveTheme(themeName: string): string {
+  return THEMES[themeName] ? themeName : 'deep-cyan';
+}
+
+function isLightTheme(themeName: string): boolean {
+  return LIGHT_THEME_SET.has(themeName);
+}
+
+function syncThemeToggleIcon(themeName: string): void {
+  const icon = document.getElementById('navThemeToggleIcon');
+  if (!icon) return;
+  const lightMode = isLightTheme(themeName);
+  icon.innerHTML = lightMode ? MOON_ICON : SUN_ICON;
+  icon.setAttribute('aria-label', lightMode ? 'switch to a dark theme' : 'switch to a light theme');
+}
 
 function showPage(page: 'metronome' | 'themes' | 'tuner' | 'timer'): void {
   document.getElementById('metronomePage')!.classList.toggle('active', page === 'metronome');
@@ -247,25 +388,26 @@ function showPage(page: 'metronome' | 'themes' | 'tuner' | 'timer'): void {
 }
 
 function applyTheme(themeName: string): void {
-  activeThemeName = themeName;
-  const theme = { ...BASE_THEME, ...(THEMES[themeName] ?? THEMES['deep-cyan']) };
+  const resolvedThemeName = resolveTheme(themeName);
+  activeThemeName = resolvedThemeName;
+  const theme = { ...BASE_THEME, ...(THEMES[resolvedThemeName] ?? THEMES['deep-cyan']) };
   Object.entries(theme).forEach(([key, value]) => {
     document.documentElement.style.setProperty(key, value);
   });
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
-    card.classList.toggle('active', card.dataset.theme === themeName);
+    card.classList.toggle('active', card.dataset.theme === resolvedThemeName);
   });
+  syncThemeToggleIcon(resolvedThemeName);
   drawDisk();
   updateUI();
 }
 
 function toggleDarkLightTheme(): void {
-  const lightThemes = new Set(['paper-sky', 'sunset', 'soft-stone']);
-  const next = lightThemes.has(activeThemeName) ? 'deep-cyan' : 'paper-sky';
-  applyTheme(next);
+  const nextThemes = LIGHT_THEME_SET.has(activeThemeName) ? DARK_THEMES : LIGHT_THEMES;
+  applyTheme(pickRandomTheme(nextThemes, activeThemeName));
 }
 
-// ─── UI update ────────────────────────────────────────────────────────────────
+// ui update.
 function updateUI(): void {
   document.getElementById('bnum')!.textContent = String(S.bpm);
   document.getElementById('tlbl')!.textContent = tname(S.bpm);
@@ -275,7 +417,7 @@ function updateUI(): void {
   document.getElementById('snv')!.textContent = String(S.sn);
   document.getElementById('sdv')!.textContent = String(S.sd);
   document.getElementById('sddisp')!.textContent = String(S.subTracks.length);
-  // BPM note icon
+  // bpm note icon.
   const wrap = document.getElementById('noteIcon')!;
   wrap.innerHTML = largeBpmNoteIcon(S.sd);
   wrap.style.color = 'var(--cy)';
@@ -283,7 +425,7 @@ function updateUI(): void {
   schedulePersistAppState();
 }
 
-// ─── Play / Stop ─────────────────────────────────────────────────────────────
+// play state.
 async function startPlay(): Promise<void> {
   const started = await startMetronome();
   if (!started) return;
@@ -315,11 +457,11 @@ function togglePlay(): void {
   void startPlay();
 }
 
-// Wire automator start playback
+// automator playback hooks.
 setOnStartPlayback(startPlay);
 setOnTempoApplied(updateUI);
 
-// ─── Vis loop ─────────────────────────────────────────────────────────────────
+// visual loop.
 let vraf: number | null = null;
 
 function startVis(): void {
@@ -337,7 +479,7 @@ function visLoop(): void {
     if (it.t <= now + 0.018) {
       if (!it.isSub) {
         flashCol(it.b);
-        // FIX: highlight the beat that JUST fired (it.b), not curBeat (which is already next)
+        // highlight the beat that just fired.
         refreshGrid(it.b);
         pendBeat();
         if (it.b === 0) onMeasureComplete();
@@ -349,7 +491,7 @@ function visLoop(): void {
   vraf = requestAnimationFrame(visLoop);
 }
 
-// ─── Tap tempo ────────────────────────────────────────────────────────────────
+// tap tempo.
 const taps: number[] = [];
 function doTap(): void {
   const now = Date.now();
@@ -389,7 +531,7 @@ function applyBpmPadValue(): void {
   updateUI();
 }
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// boot.
 function boot(): void {
   S.setBs(Array.from({ length: S.sn }, (_, i) => i === 0 ? 3 : 1));
   loadPersistedAppState();
@@ -405,7 +547,7 @@ function boot(): void {
 
   setupDiskDrag(() => updateUI());
 
-  // BPM drag on number
+  // bpm drag.
   const bnumEl = document.getElementById('bnum')!;
   let bdy: number | null = null, bdstart = S.bpm;
   let bdragged = false;
@@ -432,11 +574,11 @@ function boot(): void {
   bnumEl.addEventListener('pointerup', bEnd);
   bnumEl.addEventListener('pointercancel', bEnd);
 
-  // BPM step buttons
+  // bpm step buttons.
   document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); updateUI(); });
   document.getElementById('bdn')!.addEventListener('click', () => { S.setBpm(S.bpm - 1); updateUI(); });
 
-  // Signature stepper
+  // signature stepper.
   const DENS = [1, 2, 4, 8, 16, 32];
   document.getElementById('snup')!.addEventListener('click', () => { S.setSn(S.sn + 1); sigChange(); updateUI(); });
   document.getElementById('sndn')!.addEventListener('click', () => { S.setSn(S.sn - 1); sigChange(); updateUI(); });
@@ -449,7 +591,7 @@ function boot(): void {
     if (i > 0) { S.setSd(DENS[i - 1]); updateUI(); renderAccents(); }
   });
 
-  // Play button
+  // play button.
   const pbtn = document.getElementById('pbtn')!;
   const onPlayPress = (e: Event) => {
     e.preventDefault();
@@ -466,10 +608,10 @@ function boot(): void {
     if (e.key === 'Enter' || e.key === ' ') onPlayPress(e);
   });
 
-  // Tap
+  // tap.
   document.getElementById('tapbtn')!.addEventListener('click', doTap);
 
-  // BPM numpad
+  // bpm numpad.
   document.getElementById('bpmPadOverlay')!.addEventListener('click', e => {
     if (e.target === document.getElementById('bpmPadOverlay')) closeBpmPad();
   });
@@ -496,7 +638,7 @@ function boot(): void {
     closeBpmPad();
   });
 
-  // Sig dialog
+  // signature dialog.
   document.getElementById('sigbtn')!.addEventListener('click', openSig);
   document.getElementById('sigdisp')!.addEventListener('click', openSig);
   document.getElementById('sigClose')!.addEventListener('click', closeSig);
@@ -504,7 +646,7 @@ function boot(): void {
   document.getElementById('openSubdiv')!.addEventListener('click', () => { closeSig(); openSubdiv(); renderSubdivTracks(); setTimeout(drawSubdivCanvas, 60); });
   document.getElementById('sddisp')!.addEventListener('click', () => { openSubdiv(); renderSubdivTracks(); setTimeout(drawSubdivCanvas, 60); });
 
-  // Subdiv dialog
+  // subdivision dialog.
   document.getElementById('backToSig')!.addEventListener('click', () => { closeSubdiv(); openSig(); });
   document.getElementById('subdivClose')!.addEventListener('click', closeSubdiv);
   document.getElementById('subdivOverlay')!.addEventListener('click', e => { if (e.target === document.getElementById('subdivOverlay')) closeSubdiv(); });
@@ -519,7 +661,7 @@ function boot(): void {
     updateUI();
   });
 
-  // Volume
+  // volume.
   const volPopup = document.getElementById('volPopup')!;
   document.getElementById('tico-vol')!.addEventListener('click', e => { e.stopPropagation(); volPopup.classList.toggle('open'); });
   document.addEventListener('click', () => volPopup.classList.remove('open'));
@@ -534,7 +676,7 @@ function boot(): void {
     renderVolumeIcon(S.masterVol);
   });
 
-  // Automator
+  // automator.
   document.getElementById('tico-timer')!.addEventListener('click', openAutomator);
   document.getElementById('autoClose')!.addEventListener('click', closeAutomator);
   document.getElementById('autoOverlay')!.addEventListener('click', e => { if (e.target === document.getElementById('autoOverlay')) closeAutomator(); });
@@ -545,7 +687,7 @@ function boot(): void {
   });
   document.getElementById('hudEnd')!.addEventListener('click', endAutomator);
 
-  // Page nav
+  // page nav.
   document.getElementById('navHome')!.addEventListener('click', () => showPage('metronome'));
   document.getElementById('navTuner')!.addEventListener('click', () => showPage('tuner'));
   document.getElementById('navTimer')!.addEventListener('click', () => showPage('timer'));
@@ -557,18 +699,12 @@ function boot(): void {
 
   window.addEventListener('resize', () => { drawDisk(); drawSubdivCanvas(); });
 
-  // ── iOS PWA background / foreground handling ──────────────────────────────
-  // On background: pre-schedule a large audio window and switch the worker
-  // into wide-lookahead mode so throttled ticks keep refilling the buffer.
-  // On foreground: resume the AudioContext and restart the rAF visual loop
-  // (iOS suspends requestAnimationFrame while backgrounded).
+  // ios background handling.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       onAppBackground();
     } else {
-      // Wait for ctx.resume() to settle before re-arming the rAF loop.
-      // If startVis() runs while the context is still suspended, ctx.currentTime
-      // is frozen and visual events never fire (their timestamps stay in the future).
+      // wait for audio before restarting visuals.
       void onAppForeground().then(() => {
         if (S.playing) startVis();
       });

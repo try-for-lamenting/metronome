@@ -79,7 +79,7 @@ body {
   min-height: 0
 }
 
-/* TOP PANEL */
+/* top panel. */
 .panel {
   background: var(--sur);
   border: 1px solid var(--bdr);
@@ -258,7 +258,7 @@ body {
   background: color-mix(in srgb, var(--cy) 10%, transparent)
 }
 
-/* GRID */
+/* grid. */
 #grid {
   display: flex;
   flex-direction: column;
@@ -349,7 +349,7 @@ body {
   animation: flash .68s ease-out
 }
 
-/* PENDULUM */
+/* pendulum. */
 .pwrap {
   margin-top: 6px;
   height: 44px;
@@ -406,7 +406,7 @@ body {
   transition: box-shadow .1s
 }
 
-/* TOOLBAR */
+/* toolbar. */
 .tbar {
   display: flex;
   justify-content: center;
@@ -450,7 +450,7 @@ body {
   height: 18px
 }
 
-/* Volume slider popup */
+/* volume slider popup. */
 .vol-popup {
   position: absolute;
   bottom: 44px;
@@ -484,7 +484,7 @@ body {
   text-align: right
 }
 
-/* DISK */
+/* disk. */
 .dksec {
   flex: 1;
   display: flex;
@@ -641,7 +641,7 @@ body {
   margin-left: 0
 }
 
-/* BOTTOM BAR */
+/* bottom bar. */
 .bot {
   display: flex;
   justify-content: space-between;
@@ -693,7 +693,7 @@ body {
   color: var(--cy)
 }
 
-/* NAV */
+/* nav. */
 .nav {
   display: flex;
   justify-content: space-around;
@@ -1401,6 +1401,13 @@ body {
   transition: border-color .15s, transform .15s, box-shadow .15s
 }
 
+.theme-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0
+}
+
 .theme-card:hover {
   border-color: color-mix(in srgb, var(--cy) 38%, transparent);
   transform: translateY(-1px);
@@ -1421,27 +1428,43 @@ body {
 }
 
 .swatch-deep-cyan {
-  background: linear-gradient(135deg, #00c8e0, #07101a 70%)
+  background: linear-gradient(135deg, #00c8e0, #c04870 72%)
 }
 
 .swatch-ember {
-  background: linear-gradient(135deg, #ff8c42, #160a0d 72%)
+  background: linear-gradient(135deg, #ff9347, #ff4f5f 72%)
 }
 
-.swatch-forest {
-  background: linear-gradient(135deg, #34d7a1, #071712 72%)
+.swatch-aurora {
+  background: linear-gradient(135deg, #45dbc3, #8570ff 72%)
+}
+
+.swatch-midnight-rose {
+  background: linear-gradient(135deg, #69a7ff, #ff62ab 72%)
+}
+
+.swatch-moss-gold {
+  background: linear-gradient(135deg, #4daf74, #d2c24e 72%)
 }
 
 .swatch-sunset {
-  background: linear-gradient(135deg, #d9862a, #fff3e6 72%)
+  background: linear-gradient(135deg, #d9862a, #e86869 72%)
 }
 
 .swatch-paper-sky {
-  background: linear-gradient(135deg, #2c7fb8, #edf4fb 72%)
+  background: linear-gradient(135deg, #2c7fb8, #ee7b86 72%)
 }
 
 .swatch-soft-stone {
-  background: linear-gradient(135deg, #8a5cf6, #f6efe7 72%)
+  background: linear-gradient(135deg, #8a5cf6, #d58a58 72%)
+}
+
+.swatch-mint-sun {
+  background: linear-gradient(135deg, #31b77a, #f0b44e 72%)
+}
+
+.swatch-lemon-ink {
+  background: linear-gradient(135deg, #345f88, #d8ab1d 72%)
 }
 
 .theme-card-name {
@@ -1451,8 +1474,33 @@ body {
   color: var(--tx)
 }
 
+.theme-card-mode {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase
+}
+
+.theme-card-mode-dark {
+  background: color-mix(in srgb, #0a1018 84%, var(--cy) 16%);
+  color: #f4f8ff;
+  border: 1px solid color-mix(in srgb, #0a1018 54%, var(--cy) 46%)
+}
+
+.theme-card-mode-light {
+  background: color-mix(in srgb, var(--sur2) 76%, white 24%);
+  color: color-mix(in srgb, var(--tx) 72%, var(--cy) 28%);
+  border: 1px solid color-mix(in srgb, var(--bdr) 82%, var(--cy) 18%)
+}
+
 .theme-card-default {
   margin-left: auto;
+  flex-shrink: 0;
   font-family: 'Orbitron', monospace;
   font-size: 12px;
   letter-spacing: 1.2px;
@@ -1665,7 +1713,7 @@ body {
   }
 }
 
-/* OVERLAYS */
+/* overlays. */
 .overlay {
   position: fixed;
   inset: 0;
@@ -1764,7 +1812,7 @@ body {
   height: 16px
 }
 
-/* Sig dialog */
+/* signature dialog. */
 .sig-controls {
   display: flex;
   align-items: center;
@@ -1837,7 +1885,7 @@ body {
   padding-bottom: 8px
 }
 
-/* Accents */
+/* accents. */
 .section-lbl {
   font-size: 10px;
   font-weight: 700;
@@ -1925,7 +1973,7 @@ body {
   max-height: 100%
 }
 
-/* Subdiv navigate btn */
+/* subdivision nav button. */
 .nav-btn {
   display: flex;
   align-items: center;
@@ -1953,7 +2001,7 @@ body {
   height: 15px
 }
 
-/* Subdiv dialog */
+/* subdivision dialog. */
 #subdivCanvas {
   width: 100%;
   max-width: 340px;
@@ -2130,7 +2178,7 @@ body {
   color: var(--cy)
 }
 
-/* Automator dialog */
+/* automator dialog. */
 .auto-list {
   margin-bottom: 12px
 }
@@ -2185,7 +2233,7 @@ body {
   background: color-mix(in srgb, var(--cy) 4%, transparent)
 }
 
-/* Compact number input row */
+/* compact number row. */
 .auto-row {
   display: flex;
   gap: 12px;
@@ -2229,7 +2277,7 @@ body {
   border-color: var(--cy)
 }
 
-/* Numeric stepper widget */
+/* number stepper. */
 .num-stepper {
   display: flex;
   align-items: center;
@@ -2393,7 +2441,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent)
 }
 
-/* Automator HUD */
+/* automator hud. */
 #autoHud {
   position: fixed;
   left: 50%;
@@ -2561,7 +2609,7 @@ body {
   background: color-mix(in srgb, var(--danger) 18%, transparent)
 }
 
-/* BPM numpad */
+/* bpm numpad. */
 .bpm-pad-overlay {
   position: fixed;
   inset: 0;

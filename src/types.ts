@@ -1,14 +1,14 @@
 export interface SubTrack {
   div: number;
-  states: number[]; // 0-3 per division slot
+  states: number[]; // state per division slot.
 }
 
 export interface AutoSession {
   name: string;
   startBpm: number;
   endBpm: number;
-  period: number; // in measures
-  incr: number;   // bpm increase per period
+  period: number; // measure count.
+  incr: number;   // bpm step size.
 }
 
 export interface VisEvent {

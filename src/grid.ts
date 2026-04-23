@@ -27,7 +27,7 @@ export function cellClick(row: number, col: number): void {
   refreshGrid();
 }
 
-/** Refresh grid highlight. Pass activeBeat to highlight the beat that just fired. */
+// refresh the grid highlight.
 export function refreshGrid(activeBeat?: number): void {
   const highlight = activeBeat !== undefined ? activeBeat : (S.playing ? S.curBeat : -1);
   for (let c = 0; c < S.sn; c++) {
@@ -53,7 +53,7 @@ export function flashCol(col: number): void {
     const el = document.querySelector<HTMLElement>(`.cell[data-r="${r}"][data-c="${col}"]`);
     if (!el) continue;
     el.classList.remove('fl');
-    void el.offsetWidth; // force reflow
+    void el.offsetWidth; // force reflow.
     el.classList.add('fl');
   }
 }

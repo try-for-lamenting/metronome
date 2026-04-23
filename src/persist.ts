@@ -144,7 +144,7 @@ export function loadPersistedAppState(): void {
     persistedTimers = sanitizeTimers(parsed.timers);
     referenceTonePrefs = sanitizeReferenceTonePrefs(parsed.referenceTones);
   } catch {
-    // Ignore corrupted or unavailable storage and continue with defaults.
+    // ignore broken storage.
   }
 }
 
@@ -162,7 +162,7 @@ export function persistAppStateNow(): void {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
-    // Ignore storage write failures.
+    // ignore write failures.
   }
 }
 

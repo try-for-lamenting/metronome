@@ -1,15 +1,14 @@
 import * as S from './state';
 import type { VisEvent } from './types';
 
-// ─── Scheduler timing constants ───────────────────────────────────────────────
-// AHEAD_FG: small foreground lookahead keeps visual latency tight.
-// AHEAD_BG: iOS throttles Web Workers to ~1 Hz when backgrounded; 8 s of
-//           lookahead means each throttled tick refills ~7 s of buffer.
+// scheduler timing.
+// keep the foreground tight.
+// keep extra room in the background.
 const AHEAD_FG = 0.12;
 const AHEAD_BG = 8.0;
 const START_DELAY = 0.12;
 
-// ─── State ────────────────────────────────────────────────────────────────────
+// audio state.
 let isBackground = false;
 let audioUnlockPromise: Promise<boolean> | null = null;
 let audioPrimed = false;
@@ -17,7 +16,7 @@ let unlockListenersInstalled = false;
 let keepAliveSource: AudioBufferSourceNode | null = null;
 let outputSuppressed = false;
 
-// ─── Audio graph ──────────────────────────────────────────────────────────────
+// audio graph.
 function ensureAudioGraph(): AudioContext {
   if (!S.actx || S.actx.state === 'closed') {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -55,11 +54,7 @@ export function refreshAudioOutputLevel(): void {
   applyOutputLevel();
 }
 
-// ─── Keep-alive ───────────────────────────────────────────────────────────────
-// A 2-second looping buffer of near-inaudible noise (~-100 dBFS) connected
-// directly to destination (not through masterGain). iOS keeps the audio
-// session alive as long as it sees continuous audio activity on the context;
-// the previous 1-sample buffer was too short to register as active playback.
+// keep the session alive on ios.
 function startKeepAlive(ctx: AudioContext): void {
   if (keepAliveSource) return;
   try {
@@ -75,16 +70,16 @@ function startKeepAlive(ctx: AudioContext): void {
     src.connect(ctx.destination);
     src.start();
     keepAliveSource = src;
-  } catch { /* ignore */ }
+  } catch { /* ignore. */ }
 }
 
 function stopKeepAlive(): void {
   if (!keepAliveSource) return;
-  try { keepAliveSource.stop(); } catch { /* already stopped */ }
+  try { keepAliveSource.stop(); } catch { /* ignore. */ }
   keepAliveSource = null;
 }
 
-// ─── Audio priming ────────────────────────────────────────────────────────────
+// audio priming.
 function primeAudio(ctx: AudioContext): void {
   if (audioPrimed || !S.masterGain) return;
   const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * 0.02)), ctx.sampleRate);
@@ -154,10 +149,8 @@ export function installAudioUnlock(): void {
   window.addEventListener('keydown', tryUnlock);
 }
 
-// ─── Web Worker scheduler clock ───────────────────────────────────────────────
-// A Web Worker running setInterval is throttled less aggressively by iOS than
-// a main-thread setTimeout chain. Even throttled to ~1 Hz, each tick calls
-// sched() which fills AHEAD_BG seconds of audio, so we always stay ahead.
+// worker clock.
+// keep scheduling alive in the background.
 const WORKER_SRC = `
 var iv = null;
 self.onmessage = function(e) {
@@ -187,7 +180,7 @@ function stopSchedWorker(): void {
   schedWorker?.postMessage('stop');
 }
 
-// ─── Sound synthesis ──────────────────────────────────────────────────────────
+// sound synthesis.
 let noiseBuffer: AudioBuffer | null = null;
 
 function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
@@ -322,9 +315,8 @@ function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {
   }
 }
 
-// ─── Core scheduler ───────────────────────────────────────────────────────────
-// Called by the Web Worker on every tick (~25 ms foreground, ~1 Hz background).
-// Pure lookahead fill — timing comes entirely from the worker.
+// core scheduler.
+// the worker only fills the lookahead window.
 function sched(): void {
   if (!S.playing || !S.actx) return;
   const ahead = isBackground ? AHEAD_BG : AHEAD_FG;
@@ -336,7 +328,7 @@ function sched(): void {
   }
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// public api.
 export async function startMetronome(): Promise<boolean> {
   activateAudioOutput();
   const ready = await ensureAudio();
@@ -353,45 +345,31 @@ export async function startMetronome(): Promise<boolean> {
 export function stopMetronome(): void {
   S.setPlaying(false);
   stopSchedWorker();
-  // Clear any legacy timeout handle.
+  // clear the old timeout.
   if (S.schID !== null) { clearTimeout(S.schID); S.setSchID(null); }
-  // Disconnect masterGain and null it. This orphans every pre-scheduled
-  // AudioNode connected through it — a hard cancel of all future audio.
-  // ensureAudioGraph() creates a fresh GainNode on the next startMetronome().
+  // drop the gain node to cancel queued audio.
   if (S.masterGain) {
-    try { S.masterGain.disconnect(); } catch { /* ignore */ }
+    try { S.masterGain.disconnect(); } catch { /* ignore. */ }
     S.clearMasterGain();
   }
   stopKeepAlive();
   S.vq.length = 0;
 }
 
-/**
- * Called on visibilitychange → hidden.
- * Pre-schedules AHEAD_BG seconds immediately before iOS can suspend the context.
- * The worker continues firing (throttled) and refills the buffer on each tick.
- */
+// fill extra audio before the app hides.
 export function onAppBackground(): void {
   if (!S.playing) return;
   isBackground = true;
   sched();
 }
 
-/**
- * Called on visibilitychange → visible.
- * Resumes the AudioContext, flushes stale visual events, re-syncs nextT,
- * and triggers an immediate refill in case the pre-scheduled window expired.
- * Returns a Promise that resolves once the context is running and rescheduled,
- * so the caller can safely restart animation loops after audio is live.
- */
+// resume and resync when the app returns.
 export function onAppForeground(): Promise<void> {
   if (!S.playing || !S.actx) return Promise.resolve();
   isBackground = false;
   const resync = (): void => {
     const now = S.actx!.currentTime;
-    // Only discard past visual events. Future ones correspond to beats already
-    // committed in the Web Audio timeline — keeping them means the bar starts
-    // animating immediately on return rather than waiting for the next sched() fill.
+    // keep future events so the visuals stay in step.
     for (let i = S.vq.length - 1; i >= 0; i--) {
       if (S.vq[i].t < now) S.vq.splice(i, 1);
     }

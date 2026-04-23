@@ -84,9 +84,9 @@ function updateReferenceToneStatus(label = 'Idle', active = false): void {
 }
 
 function stopTone(): void {
-  try { activeOsc?.stop(); } catch { /* no-op */ }
-  try { activeOsc?.disconnect(); } catch { /* no-op */ }
-  try { activeGain?.disconnect(); } catch { /* no-op */ }
+  try { activeOsc?.stop(); } catch { /* ignore. */ }
+  try { activeOsc?.disconnect(); } catch { /* ignore. */ }
+  try { activeGain?.disconnect(); } catch { /* ignore. */ }
   activeOsc = null;
   activeGain = null;
   activeNoteKey = '';
@@ -304,8 +304,8 @@ function cleanUpLiveTuner(): void {
     cancelAnimationFrame(liveTunerRaf);
     liveTunerRaf = null;
   }
-  try { liveTunerSource?.disconnect(); } catch { /* no-op */ }
-  try { liveTunerAnalyser?.disconnect(); } catch { /* no-op */ }
+  try { liveTunerSource?.disconnect(); } catch { /* ignore. */ }
+  try { liveTunerAnalyser?.disconnect(); } catch { /* ignore. */ }
   liveTunerStream?.getTracks().forEach(track => track.stop());
   if (liveTunerCtx && liveTunerCtx.state !== 'closed') {
     void liveTunerCtx.close();

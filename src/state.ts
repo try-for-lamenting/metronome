@@ -1,52 +1,52 @@
 import type { SubTrack, AutoSession, VisEvent } from './types';
 
-// Tempo & signature
+// tempo and signature.
 export let bpm = 120;
-export let sn = 4; // beats per measure
-export let sd = 4; // note value denominator (1,2,4,8,16,32)
+export let sn = 4; // beats per measure.
+export let sd = 4; // note value denominator.
 
-// Beat accent states (0–3) per beat column
+// beat accents.
 export let bs: number[] = [];
 
-// Subdivision tracks
+// subdivision tracks.
 export let subTracks: SubTrack[] = [];
 
-// Playback
+// playback.
 export let playing = false;
-export let curBeat = 0;       // next beat index to schedule
-export let nextT = 0;         // next scheduled audio time
+export let curBeat = 0;       // next beat to schedule.
+export let nextT = 0;         // next audio time.
 export let schID: ReturnType<typeof setTimeout> | null = null;
 
-// Vis queue
+// visual queue.
 export const vq: VisEvent[] = [];
 
-// Audio context
+// audio context.
 export let actx: AudioContext | null = null;
 export let masterGain: GainNode | null = null;
 export let masterVol = 1;
 
-// Pendulum
+// pendulum.
 export let pBeatT = 0;
 export let pBeatMs = 0;
 export let pGoRight = true;
 
-// Disk
+// disk.
 export let diskAngleDeg = 0;
 
-// Tap tempo
+// tap tempo.
 export const taps: number[] = [];
 
-// Automator
+// automator.
 export let autoSessions: AutoSession[] = [];
 export let autoRunning = false;
 export let autoPaused = false;
 export let autoSession: AutoSession | null = null;
 export let autoBarCount = 0;
 export let autoPhase = 0;
-export let autoPhaseBar = 0; // completed measures within current phase period
-export let autoBeatInMeasure = 0; // track beat within measure
+export let autoPhaseBar = 0; // completed measures in the phase.
+export let autoBeatInMeasure = 0; // beat inside the measure.
 
-// Setters
+// setters.
 export function setBpm(v: number) { bpm = Math.max(20, Math.min(300, v)); }
 export function setSn(v: number) { sn = Math.max(1, Math.min(16, v)); }
 export function setSd(v: number) { sd = v; }

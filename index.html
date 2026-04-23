@@ -13,7 +13,6 @@
 <body>
   <div class="app">
     <div class="page page-main active" id="metronomePage">
-      <!-- TOP PANEL -->
       <div class="panel">
         <div class="hrow">
           <div class="bgrp">
@@ -54,7 +53,6 @@
         </div>
       </div>
 
-      <!-- TOOLBAR -->
       <div class="tbar">
         <div class="tico" id="tico-timer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
@@ -84,7 +82,6 @@
         </div>
       </div>
 
-      <!-- DISK -->
       <div class="dksec">
         <div class="dkwrap">
           <div id="dkout">
@@ -112,7 +109,6 @@
         </div>
       </div>
 
-      <!-- BOTTOM -->
       <div class="bot">
         <div class="sigbtn" id="sigbtn">4/4</div>
         <div class="tapbtn" id="tapbtn">TAP</div>
@@ -126,30 +122,76 @@
           <div class="theme-subtitle">Switch the entire metronome look instantly.</div>
         </div>
         <div class="theme-grid">
-          <button class="theme-card active" data-theme="deep-cyan" type="button">
+          <button class="theme-card active" data-theme="deep-cyan" data-mode="dark" type="button">
             <span class="theme-swatch swatch-deep-cyan"></span>
-            <span class="theme-card-name">Deep Cyan</span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Deep Cyan</span>
+              <span class="theme-card-mode theme-card-mode-dark">dark</span>
+            </span>
             <span class="theme-card-default">Default</span>
           </button>
-          <button class="theme-card" data-theme="ember" type="button">
+          <button class="theme-card" data-theme="ember" data-mode="dark" type="button">
             <span class="theme-swatch swatch-ember"></span>
-            <span class="theme-card-name">Ember</span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Ember Glow</span>
+              <span class="theme-card-mode theme-card-mode-dark">dark</span>
+            </span>
           </button>
-          <button class="theme-card" data-theme="forest" type="button">
-            <span class="theme-swatch swatch-forest"></span>
-            <span class="theme-card-name">Forest Pulse</span>
+          <button class="theme-card" data-theme="aurora" data-mode="dark" type="button">
+            <span class="theme-swatch swatch-aurora"></span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Aurora Haze</span>
+              <span class="theme-card-mode theme-card-mode-dark">dark</span>
+            </span>
           </button>
-          <button class="theme-card" data-theme="sunset" type="button">
+          <button class="theme-card" data-theme="midnight-rose" data-mode="dark" type="button">
+            <span class="theme-swatch swatch-midnight-rose"></span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Midnight Rose</span>
+              <span class="theme-card-mode theme-card-mode-dark">dark</span>
+            </span>
+          </button>
+          <button class="theme-card" data-theme="moss-gold" data-mode="dark" type="button">
+            <span class="theme-swatch swatch-moss-gold"></span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Moss Gold</span>
+              <span class="theme-card-mode theme-card-mode-dark">dark</span>
+            </span>
+          </button>
+          <button class="theme-card" data-theme="sunset" data-mode="light" type="button">
             <span class="theme-swatch swatch-sunset"></span>
-            <span class="theme-card-name">Sunset Tape</span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Sunset Tape</span>
+              <span class="theme-card-mode theme-card-mode-light">light</span>
+            </span>
           </button>
-          <button class="theme-card" data-theme="paper-sky" type="button">
+          <button class="theme-card" data-theme="paper-sky" data-mode="light" type="button">
             <span class="theme-swatch swatch-paper-sky"></span>
-            <span class="theme-card-name">Paper Sky</span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Paper Sky</span>
+              <span class="theme-card-mode theme-card-mode-light">light</span>
+            </span>
           </button>
-          <button class="theme-card" data-theme="soft-stone" type="button">
+          <button class="theme-card" data-theme="soft-stone" data-mode="light" type="button">
             <span class="theme-swatch swatch-soft-stone"></span>
-            <span class="theme-card-name">Soft Stone</span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Soft Stone</span>
+              <span class="theme-card-mode theme-card-mode-light">light</span>
+            </span>
+          </button>
+          <button class="theme-card" data-theme="mint-sun" data-mode="light" type="button">
+            <span class="theme-swatch swatch-mint-sun"></span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Mint Sun</span>
+              <span class="theme-card-mode theme-card-mode-light">light</span>
+            </span>
+          </button>
+          <button class="theme-card" data-theme="lemon-ink" data-mode="light" type="button">
+            <span class="theme-swatch swatch-lemon-ink"></span>
+            <span class="theme-card-copy">
+              <span class="theme-card-name">Lemon Ink</span>
+              <span class="theme-card-mode theme-card-mode-light">light</span>
+            </span>
           </button>
         </div>
       </div>
@@ -264,7 +306,6 @@
       </div>
     </div>
 
-    <!-- NAV -->
     <div class="nav">
       <div class="nv on" id="navHome">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"
@@ -304,17 +345,8 @@
         </svg>
       </div>
       <div class="nv" id="navThemeToggle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"
-          stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4" />
-          <line x1="12" y1="2" x2="12" y2="5" />
-          <line x1="12" y1="19" x2="12" y2="22" />
-          <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
-          <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-          <line x1="2" y1="12" x2="5" y2="12" />
-          <line x1="19" y1="12" x2="22" y2="12" />
-          <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
-          <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
+        <svg id="navThemeToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7"
+          stroke-linecap="round" stroke-linejoin="round">
         </svg>
       </div>
       <div class="nv" id="navThemes">
@@ -343,7 +375,6 @@
     </div>
   </div>
 
-  <!-- Automator HUD -->
   <div id="autoHud">
     <div class="hud-top">
       <div class="hud-name" id="hudName">SESSION</div>
@@ -370,7 +401,6 @@
     </div>
   </div>
 
-  <!-- SIGNATURE DIALOG -->
   <div class="overlay" id="sigOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -419,7 +449,6 @@
     </div>
   </div>
 
-  <!-- SUBDIVISIONS DIALOG -->
   <div class="overlay" id="subdivOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -450,7 +479,6 @@
     </div>
   </div>
 
-  <!-- AUTOMATOR DIALOG -->
   <div class="overlay" id="autoOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -474,7 +502,6 @@
     </div>
   </div>
 
-  <!-- BPM NUMPAD -->
   <div class="bpm-pad-overlay" id="bpmPadOverlay">
     <div class="bpm-pad" id="bpmPad">
       <div class="bpm-pad-title">SET BPM</div>
