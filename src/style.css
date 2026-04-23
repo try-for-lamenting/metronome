@@ -132,19 +132,11 @@ body {
   display: none
 }
 
-.clbl.pk {
+.clbl.pk,
+.clbl.cy,
+.clbl.gr {
   color: var(--pk);
   border: 1px solid var(--pk2)
-}
-
-.clbl.cy {
-  color: var(--cy);
-  border: 1px solid color-mix(in srgb, var(--cy) 40%, transparent)
-}
-
-.clbl.gr {
-  color: var(--cy);
-  border: 1px solid color-mix(in srgb, var(--cy) 40%, transparent)
 }
 
 .brow {
@@ -2300,6 +2292,10 @@ body {
   padding: 7px 2px;
   min-width: 0;
   -moz-appearance: textfield
+}
+
+.num-stepper input[type=number][readonly] {
+  cursor: pointer
 }
 
 .num-stepper input[type=number]::-webkit-inner-spin-button,

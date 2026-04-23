@@ -21,6 +21,13 @@ export function closeAutomator(): void {
   document.getElementById('autoOverlay')!.classList.remove('open');
 }
 
+let onOpenTempoPad: ((value: number, min: number, max: number, onChange: (v: number) => void) => void) | null = null;
+export function setOnOpenTempoPad(
+  fn: (value: number, min: number, max: number, onChange: (v: number) => void) => void
+): void {
+  onOpenTempoPad = fn;
+}
+
 // list view.
 
 export function renderAutoList(): void {
@@ -65,7 +72,8 @@ function makeNumStepper(
   max: number,
   step: number,
   onChange: (v: number) => void,
-  withTap = false
+  withTap = false,
+  usePad = false
 ): HTMLElement {
   const wrap = document.createElement('div');
   wrap.style.display = 'flex';
@@ -80,18 +88,28 @@ function makeNumStepper(
   const inp = document.createElement('input');
   inp.type = 'number'; inp.value = String(value); inp.min = String(min); inp.max = String(max);
 
-  const upBtn = document.createElement('button');
-  upBtn.className = 'ns-btn'; upBtn.textContent = '+'; upBtn.type = 'button';
-
   const emit = (v: number) => {
     const clamped = Math.max(min, Math.min(max, v));
     inp.value = String(clamped);
     onChange(clamped);
   };
 
+  if (usePad) {
+    inp.readOnly = true;
+    inp.inputMode = 'none';
+    inp.addEventListener('click', () => {
+      onOpenTempoPad?.(parseInt(inp.value, 10) || min, min, max, emit);
+    });
+  }
+
+  const upBtn = document.createElement('button');
+  upBtn.className = 'ns-btn'; upBtn.textContent = '+'; upBtn.type = 'button';
+
   dnBtn.addEventListener('click', () => emit((parseInt(inp.value) || value) - step));
   upBtn.addEventListener('click', () => emit((parseInt(inp.value) || value) + step));
-  inp.addEventListener('input', () => emit(parseInt(inp.value) || min));
+  if (!usePad) {
+    inp.addEventListener('input', () => emit(parseInt(inp.value) || min));
+  }
 
   row.appendChild(dnBtn); row.appendChild(inp); row.appendChild(upBtn);
   wrap.appendChild(row);
@@ -145,20 +163,20 @@ export function renderAutoEdit(idx: number): void {
 
   const startWrap = document.createElement('div'); startWrap.className = 'auto-field';
   const startLbl = document.createElement('label'); startLbl.textContent = 'Start BPM';
-  const startStepper = makeNumStepper(sess.startBpm, 20, 299, 1, v => {
-    sess.startBpm = v;
+  const startStepper = makeNumStepper(sess.startBpm, 20, sess.endBpm, 1, v => {
+    sess.startBpm = Math.min(v, sess.endBpm);
     updateEstimate();
     schedulePersistAppState();
-  }, true);
+  }, true, true);
   startWrap.appendChild(startLbl); startWrap.appendChild(startStepper);
 
   const endWrap = document.createElement('div'); endWrap.className = 'auto-field';
   const endLbl = document.createElement('label'); endLbl.textContent = 'End BPM';
-  const endStepper = makeNumStepper(sess.endBpm, 21, 300, 1, v => {
-    sess.endBpm = v;
+  const endStepper = makeNumStepper(sess.endBpm, sess.startBpm, 300, 1, v => {
+    sess.endBpm = Math.max(v, sess.startBpm);
     updateEstimate();
     schedulePersistAppState();
-  }, true);
+  }, true, true);
   endWrap.appendChild(endLbl); endWrap.appendChild(endStepper);
 
   bpmRow.appendChild(startWrap); bpmRow.appendChild(endWrap);

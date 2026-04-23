@@ -2,13 +2,10 @@ import * as S from './state';
 import type { VisEvent } from './types';
 
 // scheduler timing.
-// keep the foreground tight.
-// keep extra room in the background.
 const AHEAD_FG = 0.12;
 const AHEAD_BG = 8.0;
 const START_DELAY = 0.12;
 
-// audio state.
 let isBackground = false;
 let audioUnlockPromise: Promise<boolean> | null = null;
 let audioPrimed = false;
@@ -16,7 +13,6 @@ let unlockListenersInstalled = false;
 let keepAliveSource: AudioBufferSourceNode | null = null;
 let outputSuppressed = false;
 
-// audio graph.
 function ensureAudioGraph(): AudioContext {
   if (!S.actx || S.actx.state === 'closed') {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -149,8 +145,7 @@ export function installAudioUnlock(): void {
   window.addEventListener('keydown', tryUnlock);
 }
 
-// worker clock.
-// keep scheduling alive in the background.
+// worker clock, keep scheduling alive in the background.
 const WORKER_SRC = `
 var iv = null;
 self.onmessage = function(e) {
@@ -284,14 +279,14 @@ function beep(t: number, freq: number, vol: number, dur: number): void {
 }
 
 const MAIN_SND: Record<number, [number, number, number]> = {
-  1: [300, 5, 0.26],
-  2: [600, 5, 0.26],
-  3: [1200, 5, 0.26],
+  1: [300, 4, 0.26],
+  2: [600, 4, 0.26],
+  3: [1200, 4, 0.26],
 };
 const SUB_SND: Record<number, [number, number, number]> = {
-  1: [300, 2.5, 0.15],
-  2: [600, 2.5, 0.15],
-  3: [1200, 2.5, 0.15],
+  1: [300, 2, 0.15],
+  2: [600, 2, 0.15],
+  3: [1200, 2, 0.15],
 };
 
 function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {
@@ -316,7 +311,6 @@ function schedBeat(beatTime: number, beatIdx: number, beatDur: number): void {
 }
 
 // core scheduler.
-// the worker only fills the lookahead window.
 function sched(): void {
   if (!S.playing || !S.actx) return;
   const ahead = isBackground ? AHEAD_BG : AHEAD_FG;

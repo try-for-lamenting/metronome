@@ -20,7 +20,7 @@ import {
 import {
   openAutomator, closeAutomator, renderAutoList, renderAutoEdit,
   startAutomatorSession, endAutomator, onMeasureComplete, updateHud,
-  setOnStartPlayback, setOnTempoApplied,
+  setOnOpenTempoPad, setOnStartPlayback, setOnTempoApplied,
 } from './automator';
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
@@ -112,7 +112,7 @@ const THEMES: Record<string, Record<string, string>> = {
     '--bs0': '#090506',
     '--bs1': '#4a181d',
     '--bs2': '#922932',
-    '--bs3': '#ff8c42',
+    '--bs3': '#ff4f5f',
     '--muted-ring': '#4f2828',
     '--tick-major': '#ffd8c0',
     '--tick-minor': '#a97f73',
@@ -126,15 +126,15 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#45dbc3',
     '--cy2': 'rgba(69, 219, 195, .22)',
     '--pk': '#8570ff',
-    '--pk2': '#4535a6',
+    '--pk2': '#4a3eb0',
     '--tx': '#d5def6',
     '--tx2': '#7d8aad',
     '--tx3': '#2b3656',
     '--canvas-bg': '#09101d',
     '--bs0': '#060913',
-    '--bs1': '#183059',
-    '--bs2': '#3d4fb0',
-    '--bs3': '#7f74ff',
+    '--bs1': '#1f1847',
+    '--bs2': '#4c3ca2',
+    '--bs3': '#8570ff',
     '--muted-ring': '#294066',
     '--tick-major': '#e7efff',
     '--tick-minor': '#7d8aad',
@@ -154,8 +154,8 @@ const THEMES: Record<string, Record<string, string>> = {
     '--tx3': '#47384b',
     '--canvas-bg': '#120c15',
     '--bs0': '#080509',
-    '--bs1': '#2b2357',
-    '--bs2': '#7a4ca1',
+    '--bs1': '#3f1731',
+    '--bs2': '#8f3565',
     '--bs3': '#ff62ab',
     '--muted-ring': '#483450',
     '--tick-major': '#f8e6f7',
@@ -176,9 +176,9 @@ const THEMES: Record<string, Record<string, string>> = {
     '--tx3': '#3b4129',
     '--canvas-bg': '#0e120a',
     '--bs0': '#080904',
-    '--bs1': '#173a20',
-    '--bs2': '#2f7d42',
-    '--bs3': '#d2c24e',
+    '--bs1': '#163321',
+    '--bs2': '#2e6b4a',
+    '--bs3': '#4daf74',
     '--muted-ring': '#404b26',
     '--tick-major': '#f7f2cf',
     '--tick-minor': '#94906d',
@@ -192,15 +192,15 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#d9862a',
     '--cy2': 'rgba(217, 134, 42, .2)',
     '--pk': '#e86869',
-    '--pk2': '#bf7d7b',
+    '--pk2': '#9f4c53',
     '--tx': '#493327',
     '--tx2': '#8a6a55',
     '--tx3': '#c0a58d',
     '--canvas-bg': '#f4e1cd',
     '--bs0': '#efe4da',
-    '--bs1': '#f2c2aa',
-    '--bs2': '#ec9385',
-    '--bs3': '#d9862a',
+    '--bs1': '#f3d7d9',
+    '--bs2': '#efadb2',
+    '--bs3': '#e86869',
     '--active-ink': '#39261b',
     '--flash-ink': '#21140c',
     '--cell-flash-glow-alpha': '0.28',
@@ -221,14 +221,14 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#2c7fb8',
     '--cy2': 'rgba(44, 127, 184, .22)',
     '--pk': '#ee7b86',
-    '--pk2': '#c4939a',
+    '--pk2': '#c96a7a',
     '--tx': '#163248',
     '--tx2': '#5f7f99',
     '--tx3': '#8da6bc',
     '--canvas-bg': '#ddeaf6',
     '--bs0': '#e7eff7',
-    '--bs1': '#d6e5f6',
-    '--bs2': '#a8c7eb',
+    '--bs1': '#f6d9de',
+    '--bs2': '#f1aab5',
     '--bs3': '#ee7b86',
     '--active-ink': '#143247',
     '--flash-ink': '#0c2030',
@@ -250,14 +250,14 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#8a5cf6',
     '--cy2': 'rgba(138, 92, 246, .2)',
     '--pk': '#d58a58',
-    '--pk2': '#bb8f74',
+    '--pk2': '#b8764b',
     '--tx': '#3b2d23',
     '--tx2': '#7b6a5c',
     '--tx3': '#b9aa9c',
     '--canvas-bg': '#e9ded2',
     '--bs0': '#efe8df',
-    '--bs1': '#ece0f8',
-    '--bs2': '#c8afe8',
+    '--bs1': '#f2ddd1',
+    '--bs2': '#eab594',
     '--bs3': '#d58a58',
     '--active-ink': '#35291f',
     '--flash-ink': '#1f1712',
@@ -279,14 +279,14 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#31b77a',
     '--cy2': 'rgba(49, 183, 122, .2)',
     '--pk': '#f0b44e',
-    '--pk2': '#d49a48',
+    '--pk2': '#c3902f',
     '--tx': '#17382a',
     '--tx2': '#5f7f70',
     '--tx3': '#96b7a4',
     '--canvas-bg': '#dceede',
     '--bs0': '#eaf5e8',
-    '--bs1': '#d3eed7',
-    '--bs2': '#99db9d',
+    '--bs1': '#f7e7bf',
+    '--bs2': '#f4cc79',
     '--bs3': '#f0b44e',
     '--active-ink': '#143025',
     '--flash-ink': '#10241c',
@@ -308,15 +308,15 @@ const THEMES: Record<string, Record<string, string>> = {
     '--cy': '#345f88',
     '--cy2': 'rgba(52, 95, 136, .18)',
     '--pk': '#d8ab1d',
-    '--pk2': '#b78815',
+    '--pk2': '#b18e19',
     '--tx': '#273240',
     '--tx2': '#6d7783',
     '--tx3': '#a7ad9a',
     '--canvas-bg': '#efe8be',
     '--bs0': '#f3eed2',
-    '--bs1': '#e7df9d',
-    '--bs2': '#d6bf53',
-    '--bs3': '#345f88',
+    '--bs1': '#f2e7ad',
+    '--bs2': '#e5ca58',
+    '--bs3': '#d8ab1d',
     '--active-ink': '#1b2632',
     '--flash-ink': '#121a22',
     '--cell-flash-glow-alpha': '0.28',
@@ -460,6 +460,9 @@ function togglePlay(): void {
 // automator playback hooks.
 setOnStartPlayback(startPlay);
 setOnTempoApplied(updateUI);
+setOnOpenTempoPad((value, min, max, onChange) => {
+  openBpmPad(value, onChange, min, max);
+});
 
 // visual loop.
 let vraf: number | null = null;
@@ -507,13 +510,27 @@ function doTap(): void {
 }
 
 let bpmPadValue = '';
+let bpmPadMin = 20;
+let bpmPadMax = 300;
+let bpmPadApply: ((value: number) => void) | null = null;
 
 function closeBpmPad(): void {
   document.getElementById('bpmPadOverlay')?.classList.remove('open');
 }
 
-function openBpmPad(): void {
-  bpmPadValue = String(S.bpm);
+function openBpmPad(
+  value = S.bpm,
+  onApply: (value: number) => void = nextValue => {
+    S.setBpm(nextValue);
+    updateUI();
+  },
+  min = 20,
+  max = 300
+): void {
+  bpmPadValue = String(value);
+  bpmPadMin = min;
+  bpmPadMax = max;
+  bpmPadApply = onApply;
   const display = document.getElementById('bpmPadDisplay');
   if (display) display.textContent = bpmPadValue;
   document.getElementById('bpmPadOverlay')?.classList.add('open');
@@ -527,8 +544,8 @@ function syncBpmPadDisplay(): void {
 
 function applyBpmPadValue(): void {
   if (!bpmPadValue) return;
-  S.setBpm(parseInt(bpmPadValue, 10));
-  updateUI();
+  const nextValue = Math.max(bpmPadMin, Math.min(bpmPadMax, parseInt(bpmPadValue, 10)));
+  bpmPadApply?.(nextValue);
 }
 
 // boot.
