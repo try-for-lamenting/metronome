@@ -6,6 +6,8 @@ import {
   refreshAudioOutputLevel,
   startMetronome,
   stopMetronome,
+  onAppBackground,
+  onAppForeground,
 } from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
@@ -554,6 +556,24 @@ function boot(): void {
   });
 
   window.addEventListener('resize', () => { drawDisk(); drawSubdivCanvas(); });
+
+  // ── iOS PWA background / foreground handling ──────────────────────────────
+  // On background: pre-schedule a large audio window and switch the worker
+  // into wide-lookahead mode so throttled ticks keep refilling the buffer.
+  // On foreground: resume the AudioContext and restart the rAF visual loop
+  // (iOS suspends requestAnimationFrame while backgrounded).
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      onAppBackground();
+    } else {
+      // Wait for ctx.resume() to settle before re-arming the rAF loop.
+      // If startVis() runs while the context is still suspended, ctx.currentTime
+      // is frozen and visual events never fire (their timestamps stay in the future).
+      void onAppForeground().then(() => {
+        if (S.playing) startVis();
+      });
+    }
+  });
 }
 
 window.addEventListener('load', boot);

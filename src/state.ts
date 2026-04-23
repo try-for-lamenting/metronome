@@ -58,6 +58,7 @@ export function setNextT(v: number) { nextT = v; }
 export function setSchID(v: ReturnType<typeof setTimeout> | null) { schID = v; }
 export function setActx(v: AudioContext) { actx = v; }
 export function setMasterGain(v: GainNode) { masterGain = v; }
+export function clearMasterGain() { masterGain = null; }
 export function setMasterVol(v: number) { masterVol = v; }
 export function setPBeatT(v: number) { pBeatT = v; }
 export function setPBeatMs(v: number) { pBeatMs = v; }
