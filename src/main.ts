@@ -31,6 +31,7 @@ import { loadPersistedAppState, schedulePersistAppState, getPersistedTheme, pers
 import { closePresets, openPresets, renderPresetList, setOnPresetApplied } from './presets';
 import { initTunerPage, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
+import { setOnOpenTimerPad } from './timers';
 import { playWheelTicks } from './audio';
 
 // tempo names.
@@ -473,6 +474,9 @@ setOnStartPlayback(startPlay);
 setOnTempoApplied(updateUI);
 setOnPresetApplied(updateUI);
 setOnOpenTempoPad((value, min, max, onChange) => {
+  openBpmPad(value, onChange, min, max);
+});
+setOnOpenTimerPad((value, min, max, onChange) => {
   openBpmPad(value, onChange, min, max);
 });
 

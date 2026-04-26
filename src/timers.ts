@@ -17,6 +17,13 @@ let completedTimerIds: number[] = [];
 let activeTimerNotifications = new Map<number, Notification>();
 let renderTimers: (() => void) | null = null;
 let timerDisplayEls = new Map<number, HTMLElement>();
+let onOpenTimerPad: ((value: number, min: number, max: number, onChange: (v: number) => void) => void) | null = null;
+
+export function setOnOpenTimerPad(
+  fn: (value: number, min: number, max: number, onChange: (v: number) => void) => void
+): void {
+  onOpenTimerPad = fn;
+}
 
 async function requestNotificationAccessOnLoad(): Promise<void> {
   if (typeof Notification === 'undefined') return;
@@ -229,9 +236,8 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
   const minInput = document.createElement('input');
   minInput.className = 'timer-num';
   minInput.type = 'text';
-  minInput.inputMode = 'numeric';
-  minInput.pattern = '[0-9]*';
-  minInput.autocomplete = 'off';
+  minInput.readOnly = true;
+  minInput.inputMode = 'none';
   minInput.min = '0';
   minInput.max = '300';
   minInput.value = String(Math.floor(timer.durationSec / 60));
@@ -246,24 +252,14 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
   const secInput = document.createElement('input');
   secInput.className = 'timer-num';
   secInput.type = 'text';
-  secInput.inputMode = 'numeric';
-  secInput.pattern = '[0-9]*';
-  secInput.autocomplete = 'off';
+  secInput.readOnly = true;
+  secInput.inputMode = 'none';
   secInput.min = '0';
   secInput.max = '59';
   secInput.value = String(timer.durationSec % 60);
 
   secWrap.appendChild(secLbl);
   secWrap.appendChild(secInput);
-
-  const keepDigitsOnly = (input: HTMLInputElement): void => {
-    input.addEventListener('input', () => {
-      const digits = input.value.replace(/\D+/g, '');
-      if (input.value !== digits) input.value = digits;
-    });
-  };
-  keepDigitsOnly(minInput);
-  keepDigitsOnly(secInput);
 
   const applyDuration = (): void => {
     const mm = Math.max(0, Math.min(300, parseInt(minInput.value || '0', 10) || 0));
@@ -273,8 +269,19 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
     persistTimers();
     render();
   };
-  minInput.addEventListener('change', applyDuration);
-  secInput.addEventListener('change', applyDuration);
+
+  minInput.addEventListener('click', () => {
+    onOpenTimerPad?.(parseInt(minInput.value, 10) || 0, 0, 300, value => {
+      minInput.value = String(value);
+      applyDuration();
+    });
+  });
+  secInput.addEventListener('click', () => {
+    onOpenTimerPad?.(parseInt(secInput.value, 10) || 0, 0, 59, value => {
+      secInput.value = String(value);
+      applyDuration();
+    });
+  });
 
   const display = document.createElement('div');
   display.className = 'timer-display';
