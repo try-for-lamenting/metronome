@@ -1,4 +1,5 @@
 import * as S from './state';
+import { refreshMetronomeSchedule } from './audio';
 import { accentIconSVG } from './glyphs';
 import { renderGrid } from './grid';
 import { schedulePersistAppState } from './persist';
@@ -27,6 +28,7 @@ export function sigChange(): void {
     S.bs.push(i < old.length ? old[i] : (i === 0 ? 3 : 1));
   }
   if (S.curBeat >= S.sn) S.setCurBeat(0);
+  refreshMetronomeSchedule();
   renderGrid();
   renderAccents();
   schedulePersistAppState();
@@ -50,6 +52,7 @@ export function renderAccents(): void {
     cell.appendChild(numEl);
     cell.addEventListener('click', () => {
       S.setBsAt(i, (S.bs[i] + 1) % 4);
+      refreshMetronomeSchedule();
       renderGrid();
       renderAccents();
       schedulePersistAppState();

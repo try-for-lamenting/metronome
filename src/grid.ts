@@ -1,4 +1,5 @@
 import * as S from './state';
+import { refreshMetronomeSchedule } from './audio';
 
 export function renderGrid(): void {
   const g = document.getElementById('grid')!;
@@ -24,6 +25,7 @@ export function renderGrid(): void {
 export function cellClick(row: number, col: number): void {
   const t = 3 - row;
   S.setBsAt(col, S.bs[col] === t ? 0 : t);
+  refreshMetronomeSchedule();
   refreshGrid();
 }
 

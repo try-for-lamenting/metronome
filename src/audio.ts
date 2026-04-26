@@ -5,6 +5,7 @@ import type { VisEvent } from './types';
 const AHEAD_FG = 0.12;
 const AHEAD_BG = 8.0;
 const START_DELAY = 0.12;
+const RESCHEDULE_EPS = 0.01;
 
 let isBackground = false;
 let audioUnlockPromise: Promise<boolean> | null = null;
@@ -173,6 +174,32 @@ function startSchedWorker(): void {
 
 function stopSchedWorker(): void {
   schedWorker?.postMessage('stop');
+}
+
+function dropScheduledAudio(): void {
+  if (!S.masterGain) return;
+  try { S.masterGain.disconnect(); } catch { /* ignore. */ }
+  S.clearMasterGain();
+}
+
+function getUpcomingBeat(now: number): { nextBeatTime: number; nextBeatIndex: number } {
+  const safeSn = Math.max(1, S.sn);
+  const beatDur = 60 / S.bpm;
+  let nextBeatTime = Number.isFinite(S.nextT) && S.nextT > 0 ? S.nextT : now + START_DELAY;
+  let nextBeatIndex = ((S.curBeat % safeSn) + safeSn) % safeSn;
+
+  if (nextBeatTime > now + RESCHEDULE_EPS + beatDur) {
+    const stepsBack = Math.floor((nextBeatTime - (now + RESCHEDULE_EPS)) / beatDur);
+    nextBeatTime -= stepsBack * beatDur;
+    nextBeatIndex = ((nextBeatIndex - (stepsBack % safeSn)) + safeSn) % safeSn;
+  }
+
+  while (nextBeatTime <= now + RESCHEDULE_EPS) {
+    nextBeatTime += beatDur;
+    nextBeatIndex = (nextBeatIndex + 1) % safeSn;
+  }
+
+  return { nextBeatTime, nextBeatIndex };
 }
 
 // sound synthesis.
@@ -355,6 +382,20 @@ function sched(): void {
   }
 }
 
+export function refreshMetronomeSchedule(): void {
+  if (!S.playing) return;
+  const ctx = ensureAudioGraph();
+  const now = ctx.currentTime;
+  const { nextBeatTime, nextBeatIndex } = getUpcomingBeat(now);
+  dropScheduledAudio();
+  ensureAudioGraph();
+  startKeepAlive(ctx);
+  S.vq.length = 0;
+  S.setCurBeat(nextBeatIndex);
+  S.setNextT(nextBeatTime);
+  sched();
+}
+
 // public api.
 export async function startMetronome(): Promise<boolean> {
   activateAudioOutput();
@@ -375,10 +416,7 @@ export function stopMetronome(): void {
   // clear the old timeout.
   if (S.schID !== null) { clearTimeout(S.schID); S.setSchID(null); }
   // drop the gain node to cancel queued audio.
-  if (S.masterGain) {
-    try { S.masterGain.disconnect(); } catch { /* ignore. */ }
-    S.clearMasterGain();
-  }
+  dropScheduledAudio();
   stopKeepAlive();
   S.vq.length = 0;
 }
@@ -395,13 +433,7 @@ export function onAppForeground(): Promise<void> {
   if (!S.playing || !S.actx) return Promise.resolve();
   isBackground = false;
   const resync = (): void => {
-    const now = S.actx!.currentTime;
-    // keep future events so the visuals stay in step.
-    for (let i = S.vq.length - 1; i >= 0; i--) {
-      if (S.vq[i].t < now) S.vq.splice(i, 1);
-    }
-    if (S.nextT <= now) S.setNextT(now + 0.05);
-    sched();
+    refreshMetronomeSchedule();
   };
   if (S.actx.state !== 'running') {
     return S.actx.resume().then(resync).catch(resync);

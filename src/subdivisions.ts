@@ -1,4 +1,5 @@
 import * as S from './state';
+import { refreshMetronomeSchedule } from './audio';
 import { schedulePersistAppState } from './persist';
 
 // sweep tracking.
@@ -49,6 +50,7 @@ export function renderSubdivTracks(): void {
       if (track.div >= 16) return;
       track.div++;
       track.states.push(1);
+      refreshMetronomeSchedule();
       schedulePersistAppState();
       refreshSubdivisionUi();
     });
@@ -60,6 +62,7 @@ export function renderSubdivTracks(): void {
       if (track.div <= 2) return;
       track.div--;
       track.states = track.states.slice(0, track.div);
+      refreshMetronomeSchedule();
       schedulePersistAppState();
       refreshSubdivisionUi();
     });
@@ -81,6 +84,7 @@ export function renderSubdivTracks(): void {
         dot.className = `sb sb${st}`;
         dot.addEventListener('click', () => {
           track.states[d] = (track.states[d] + 1) % 4;
+          refreshMetronomeSchedule();
           schedulePersistAppState();
           refreshSubdivisionUi();
         });
@@ -94,6 +98,7 @@ export function renderSubdivTracks(): void {
     del.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
     del.addEventListener('click', () => {
       S.subTracks.splice(ti, 1);
+      refreshMetronomeSchedule();
       schedulePersistAppState();
       refreshSubdivisionUi();
       document.getElementById('sddisp')!.textContent = String(S.subTracks.length);
@@ -131,6 +136,7 @@ export function handleSubdivCanvasClick(e: MouseEvent): void {
   if (closest && closestDist < 28) {
     const { ti, d } = closest;
     S.subTracks[ti].states[d] = (S.subTracks[ti].states[d] + 1) % 4;
+    refreshMetronomeSchedule();
     schedulePersistAppState();
     refreshSubdivisionUi();
   }

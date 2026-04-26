@@ -1,5 +1,6 @@
 import * as S from './state';
 import type { AutoSession } from './types';
+import { refreshMetronomeSchedule } from './audio';
 import { schedulePersistAppState } from './persist';
 
 // helpers.
@@ -271,6 +272,7 @@ let skipBoundaryOnce = false;
 
 function applyAutomatorTempo(bpm: number): void {
   S.setBpm(bpm);
+  refreshMetronomeSchedule();
   onTempoApplied?.();
 }
 

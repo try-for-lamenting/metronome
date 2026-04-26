@@ -4,6 +4,7 @@ import {
   installAudioUnlock,
   nudgeAudioFromGesture,
   refreshAudioOutputLevel,
+  refreshMetronomeSchedule,
   startMetronome,
   stopMetronome,
   onAppBackground,
@@ -504,6 +505,7 @@ function doTap(): void {
     let s = 0;
     for (let i = 1; i < taps.length; i++) s += taps[i] - taps[i - 1];
     S.setBpm(Math.max(20, Math.min(300, Math.round(60000 / (s / (taps.length - 1))))));
+    refreshMetronomeSchedule();
     updateUI();
   }
   if (taps.length > 8) taps.shift();
@@ -522,6 +524,7 @@ function openBpmPad(
   value = S.bpm,
   onApply: (value: number) => void = nextValue => {
     S.setBpm(nextValue);
+    refreshMetronomeSchedule();
     updateUI();
   },
   min = 20,
@@ -580,6 +583,7 @@ function boot(): void {
     if (bdy === null) return;
     if (Math.abs(bdy - e.clientY) > 3) bdragged = true;
     S.setBpm(Math.round(bdstart + (bdy - e.clientY) * 0.55));
+    refreshMetronomeSchedule();
     updateUI();
   });
   bnumEl.addEventListener('pointerup', () => {
@@ -592,8 +596,8 @@ function boot(): void {
   bnumEl.addEventListener('pointercancel', bEnd);
 
   // bpm step buttons.
-  document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); updateUI(); });
-  document.getElementById('bdn')!.addEventListener('click', () => { S.setBpm(S.bpm - 1); updateUI(); });
+  document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); refreshMetronomeSchedule(); updateUI(); });
+  document.getElementById('bdn')!.addEventListener('click', () => { S.setBpm(S.bpm - 1); refreshMetronomeSchedule(); updateUI(); });
 
   // signature stepper.
   const DENS = [1, 2, 4, 8, 16, 32];
@@ -601,11 +605,11 @@ function boot(): void {
   document.getElementById('sndn')!.addEventListener('click', () => { S.setSn(S.sn - 1); sigChange(); updateUI(); });
   document.getElementById('sdup')!.addEventListener('click', () => {
     const i = DENS.indexOf(S.sd);
-    if (i < DENS.length - 1) { S.setSd(DENS[i + 1]); updateUI(); renderAccents(); }
+    if (i < DENS.length - 1) { S.setSd(DENS[i + 1]); refreshMetronomeSchedule(); updateUI(); renderAccents(); }
   });
   document.getElementById('sddn')!.addEventListener('click', () => {
     const i = DENS.indexOf(S.sd);
-    if (i > 0) { S.setSd(DENS[i - 1]); updateUI(); renderAccents(); }
+    if (i > 0) { S.setSd(DENS[i - 1]); refreshMetronomeSchedule(); updateUI(); renderAccents(); }
   });
 
   // play button.
@@ -673,6 +677,7 @@ function boot(): void {
     const states = Array(div).fill(0);
     for (let i = 1; i < div; i++) states[i] = 1;
     S.subTracks.push({ div, states });
+    refreshMetronomeSchedule();
     schedulePersistAppState();
     renderSubdivTracks(); drawSubdivCanvas();
     updateUI();
