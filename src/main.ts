@@ -558,13 +558,13 @@ function applyBpmPadValue(): void {
 function initDraggableSheet(overlayId: string, onDismiss: () => void): void {
   const overlay = document.getElementById(overlayId);
   const sheet = overlay?.querySelector<HTMLElement>('.sheet');
-  const handle = overlay?.querySelector<HTMLElement>('.sheet-handle');
-  if (!overlay || !sheet || !handle) return;
+  if (!overlay || !sheet) return;
 
   let pointerId: number | null = null;
   let startY = 0;
   let dragY = 0;
   let dragging = false;
+  const dragZoneHeight = 84;
 
   const resetSheet = (): void => {
     dragY = 0;
@@ -573,21 +573,25 @@ function initDraggableSheet(overlayId: string, onDismiss: () => void): void {
     sheet.style.transform = '';
   };
 
-  handle.addEventListener('pointerdown', e => {
+  const onPointerDown = (e: PointerEvent): void => {
     if (!overlay.classList.contains('open')) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('.sheet-close, .sheet-back, input, button, textarea, select, canvas, .auto-item, .preset-item, .add-row, .nav-btn, .sub-row')) return;
+    const sheetTop = sheet.getBoundingClientRect().top;
+    if (e.clientY - sheetTop > dragZoneHeight) return;
     pointerId = e.pointerId;
     startY = e.clientY;
     dragY = 0;
     dragging = true;
-    handle.setPointerCapture(e.pointerId);
+    sheet.setPointerCapture(e.pointerId);
     sheet.classList.add('is-dragging');
-  });
+  };
 
-  handle.addEventListener('pointermove', e => {
+  const onPointerMove = (e: PointerEvent): void => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragY = Math.max(0, e.clientY - startY);
     sheet.style.transform = `translateY(${dragY}px)`;
-  });
+  };
 
   const release = (e: PointerEvent): void => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -597,8 +601,10 @@ function initDraggableSheet(overlayId: string, onDismiss: () => void): void {
     if (shouldDismiss) onDismiss();
   };
 
-  handle.addEventListener('pointerup', release);
-  handle.addEventListener('pointercancel', release);
+  sheet.addEventListener('pointerdown', onPointerDown);
+  sheet.addEventListener('pointermove', onPointerMove);
+  sheet.addEventListener('pointerup', release);
+  sheet.addEventListener('pointercancel', release);
 }
 
 // boot.
