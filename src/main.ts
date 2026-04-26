@@ -18,7 +18,7 @@ import { cancelPendulumSettle, pendBeat, pendToEdge, startPendulum } from './pen
 import { drawDisk, setupDiskDrag } from './disk';
 import {
   renderSubdivTracks, drawSubdivCanvas,
-  animateSubdivSweep, formatPolyrhythmRatio, handleSubdivCanvasClick, resetSweepAngle, syncSubdivisionDisplay,
+  animateSubdivSweep, handleSubdivCanvasClick, resetSweepAngle, syncSubdivisionDisplay,
 } from './subdivisions';
 import {
   openAutomator, closeAutomator, renderAutoList, renderAutoEdit,
@@ -376,13 +376,6 @@ function applyTheme(themeName: string): void {
   updateUI();
 }
 
-function getSubdivisionDisplaySizeClass(value: string): string {
-  if (value.length >= 11) return 'ratio-xs';
-  if (value.length >= 9) return 'ratio-sm';
-  if (value.length >= 7) return 'ratio-md';
-  return 'ratio-lg';
-}
-
 function syncPendulumVisibility(): void {
   const wrap = document.querySelector<HTMLElement>('.pwrap');
   if (!wrap) return;
@@ -433,11 +426,7 @@ function updateUI(): void {
   document.getElementById('sigbtn')!.textContent = sig;
   document.getElementById('snv')!.textContent = String(S.sn);
   document.getElementById('sdv')!.textContent = String(S.sd);
-  const polyRatio = formatPolyrhythmRatio(S.subTracks);
-  const subdivDisplay = document.getElementById('sddisp')!;
-  subdivDisplay.textContent = polyRatio;
-  subdivDisplay.classList.remove('ratio-lg', 'ratio-md', 'ratio-sm', 'ratio-xs');
-  subdivDisplay.classList.add(getSubdivisionDisplaySizeClass(polyRatio));
+  syncSubdivisionDisplay();
   // bpm note icon.
   const wrap = document.getElementById('noteIcon')!;
   wrap.innerHTML = largeBpmNoteIcon(S.sd);

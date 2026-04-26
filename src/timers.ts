@@ -16,6 +16,7 @@ let tickHandle: ReturnType<typeof setInterval> | null = null;
 let completedTimerIds: number[] = [];
 let activeTimerNotifications = new Map<number, Notification>();
 let renderTimers: (() => void) | null = null;
+let timerDisplayEls = new Map<number, HTMLElement>();
 
 async function requestNotificationAccessOnLoad(): Promise<void> {
   if (typeof Notification === 'undefined') return;
@@ -140,6 +141,20 @@ function fmt(sec: number): string {
   return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
 }
 
+function syncTimerDisplay(timer: TimerItem): void {
+  const display = timerDisplayEls.get(timer.id);
+  if (!display) return;
+  display.textContent = fmt(timer.remainingSec);
+}
+
+function syncAllTimerDisplays(): void {
+  for (const timer of timers) {
+    const display = timerDisplayEls.get(timer.id);
+    if (!display) continue;
+    display.textContent = fmt(timer.remainingSec);
+  }
+}
+
 function ensureTicker(render: () => void): void {
   if (tickHandle !== null) return;
   tickHandle = setInterval(() => {
@@ -150,6 +165,7 @@ function ensureTicker(render: () => void): void {
       const left = Math.max(0, Math.round((t.endAtMs - now) / 1000));
       if (left !== t.remainingSec) {
         t.remainingSec = left;
+        syncTimerDisplay(t);
         changed = true;
       }
       if (left <= 0) {
@@ -162,7 +178,6 @@ function ensureTicker(render: () => void): void {
     }
     if (changed) {
       persistTimers();
-      render();
     }
     if (!timers.some(t => t.running) && tickHandle !== null) {
       clearInterval(tickHandle);
@@ -213,7 +228,10 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
   minLbl.textContent = 'Minutes';
   const minInput = document.createElement('input');
   minInput.className = 'timer-num';
-  minInput.type = 'number';
+  minInput.type = 'text';
+  minInput.inputMode = 'numeric';
+  minInput.pattern = '[0-9]*';
+  minInput.autocomplete = 'off';
   minInput.min = '0';
   minInput.max = '300';
   minInput.value = String(Math.floor(timer.durationSec / 60));
@@ -227,13 +245,25 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
   secLbl.textContent = 'Seconds';
   const secInput = document.createElement('input');
   secInput.className = 'timer-num';
-  secInput.type = 'number';
+  secInput.type = 'text';
+  secInput.inputMode = 'numeric';
+  secInput.pattern = '[0-9]*';
+  secInput.autocomplete = 'off';
   secInput.min = '0';
   secInput.max = '59';
   secInput.value = String(timer.durationSec % 60);
 
   secWrap.appendChild(secLbl);
   secWrap.appendChild(secInput);
+
+  const keepDigitsOnly = (input: HTMLInputElement): void => {
+    input.addEventListener('input', () => {
+      const digits = input.value.replace(/\D+/g, '');
+      if (input.value !== digits) input.value = digits;
+    });
+  };
+  keepDigitsOnly(minInput);
+  keepDigitsOnly(secInput);
 
   const applyDuration = (): void => {
     const mm = Math.max(0, Math.min(300, parseInt(minInput.value || '0', 10) || 0));
@@ -249,6 +279,7 @@ function buildTimerCard(timer: TimerItem, render: () => void): HTMLElement {
   const display = document.createElement('div');
   display.className = 'timer-display';
   display.textContent = fmt(timer.remainingSec);
+  timerDisplayEls.set(timer.id, display);
 
   controls.appendChild(minWrap);
   controls.appendChild(secWrap);
@@ -313,8 +344,10 @@ export function initTimersPage(): void {
   if (!list || !addBtn) return;
 
   const render = (): void => {
+    timerDisplayEls = new Map();
     list.innerHTML = '';
     for (const t of timers) list.appendChild(buildTimerCard(t, render));
+    syncAllTimerDisplays();
   };
   renderTimers = render;
   void requestNotificationAccessOnLoad();

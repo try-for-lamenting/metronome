@@ -20,7 +20,8 @@ export function formatPolyrhythmRatio(subTracks: SubTrack[]): string {
 export function syncSubdivisionDisplay(): void {
   const display = document.getElementById('sddisp');
   if (!display) return;
-  display.textContent = formatPolyrhythmRatio(S.subTracks);
+  display.textContent = String(S.subTracks.length);
+  display.classList.remove('ratio-lg', 'ratio-md', 'ratio-sm', 'ratio-xs');
 }
 
 function cssVar(name: string): string {
