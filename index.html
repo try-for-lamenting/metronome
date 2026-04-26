@@ -210,6 +210,111 @@
       </div>
     </div>
 
+    <div class="page page-settings" id="settingsPage">
+      <div class="tool-shell settings-shell">
+        <div class="tool-header">
+          <div class="tool-title">Settings</div>
+          <div class="tool-subtitle">Playback options and data tools.</div>
+        </div>
+
+        <section class="settings-card">
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Enable pendulum</div>
+              <div class="settings-copy">Turn the pendulum rail on or off on the main metronome page.</div>
+            </div>
+            <label class="settings-switch" for="settingsPendulumToggle">
+              <input id="settingsPendulumToggle" type="checkbox">
+              <span class="settings-switch-ui"></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-card">
+          <button class="tool-primary-btn settings-action-btn" id="settingsReloadBtn" type="button">Reload App</button>
+          <button class="tool-primary-btn settings-action-btn" id="settingsExportBtn" type="button">Export Data</button>
+          <button class="tool-primary-btn settings-action-btn" id="settingsImportBtn" type="button">Import Data</button>
+          <input id="settingsImportFile" type="file" accept="application/json,.json" hidden>
+        </section>
+
+        <section class="settings-card">
+          <div class="settings-label">Version</div>
+          <div class="settings-version" id="settingsVersionValue">—</div>
+          <div class="settings-copy">Build timestamp generated from the deployment ISO time.</div>
+        </section>
+      </div>
+    </div>
+
+    <div class="page page-help" id="helpPage">
+      <div class="tool-shell help-shell">
+        <div class="tool-header">
+          <div class="tool-title">Help</div>
+          <div class="tool-subtitle">Usage notes, feature guides, and iOS installation.</div>
+        </div>
+
+        <section class="help-card">
+          <div class="help-card-title">Basic Usage</div>
+          <p>The tempo may be set by dragging the wheel, using the arrow controls, tapping the BPM number for keypad entry, or using the tap function. The time signature controls the number of beats per measure and the note value for each beat.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card-title">Subdivisions</div>
+          <p>In the subdivisions interface, each subdivision tracks divide one beat into equal parts. The individual subdivisions in a beat may be individually accented, and multiple tracks can be used to layer different divisions for polyrhythms. This method is more flexible for creating complex rhythmic patterns than traditional metronomes.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card-title">Automator</div>
+          <p>The automator stores automated tempo patterns that can be useful during practice sessions. The number of measures and tempo changes may be configured. Each measure is determined by the time signature.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card-title">Tuner and Reference Tones</div>
+          <p>The tuner can listen through the microphone or play fixed reference tones. The frequency of A4 is adjustable to different instruments, and the reference section may be used to match pitch without using the microphone tuner.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card-title">Timers</div>
+          <p>Timers count down in the timer page. They can continue while the app is in the background, and when a timer ends the app will signal with an alert sound and notification.</p>
+        </section>
+
+        <section class="help-card">
+          <div class="help-card-title">Data Tools</div>
+          <p>The export and import functions may be used to save configurations such as automator sessions, configuration presets, and timers. Reload can be used to restart the interface and audio engine.</p>
+        </section>
+
+        <section class="help-card help-card-pwa">
+          <div class="help-card-title">iOS App Installation</div>
+          <div class="help-pwa-card">
+            <div class="help-pwa-art" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="help-pwa-title">Add to Home Screen</div>
+            <ol class="help-pwa-steps">
+              <li>Open Safari and go to the website you want.</li>
+              <li>
+                Tap the Share button
+                <span class="help-share-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M9 3C9 2.44772 9.44772 2 10 2C10.5523 2 11 2.44772 11 3L11 13.5C11 14.0523 10.5523 14.5 10 14.5C9.44772 14.5 9 14.0523 9 13.5L9 3Z" fill="currentColor"/>
+                    <path d="M10.6402 2.76826C11.0645 2.41469 11.1218 1.78413 10.7682 1.35985C10.4147 0.935575 9.7841 0.878251 9.35982 1.23181L6.35982 3.73181C5.93554 4.08538 5.87822 4.71594 6.23178 5.14022C6.58535 5.5645 7.21591 5.62182 7.64019 5.26826L10.6402 2.76826Z" fill="currentColor"/>
+                    <path d="M9.35981 2.76826C8.93553 2.41469 8.87821 1.78413 9.23177 1.35985C9.58534 0.935575 10.2159 0.878251 10.6402 1.23181L13.6402 3.73181C14.0645 4.08538 14.1218 4.71594 13.7682 5.14022C13.4147 5.5645 12.7841 5.62182 12.3598 5.26826L9.35981 2.76826Z" fill="currentColor"/>
+                    <path d="M13 9C12.4477 9 12 8.55228 12 8C12 7.44772 12.4477 7 13 7H14C15.6233 7 17 8.16491 17 9.69231V17.3077C17 18.8351 15.6233 20 14 20L6 20C4.37672 20 3 18.8351 3 17.3077L3 9.69231C3 8.16491 4.37672 7 6 7H7C7.55228 7 8 7.44772 8 8C8 8.55228 7.55228 9 7 9H6C5.41414 9 5 9.35043 5 9.69231L5 17.3077C5 17.6496 5.41414 18 6 18L14 18C14.5859 18 15 17.6496 15 17.3077L15 9.69231C15 9.35043 14.5859 9 14 9L13 9Z" fill="currentColor"/>
+                  </svg>
+                </span>
+                to the right of the address bar.
+              </li>
+              <li>Scroll down and tap <span>Add to Home Screen</span>.</li>
+              <li>Enable <span>Open as Web App</span>.</li>
+              <li>Tap <span>Add</span>.</li>
+            </ol>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <div class="page page-tuner" id="tunerPage">
       <div class="tool-shell tuner-shell">
         <div class="tool-header tuner-header">
@@ -291,7 +396,7 @@
             <div class="signal-strip">
               <div class="signal-strip-fill" id="liveTunerSignalFill"></div>
             </div>
-            <div class="live-tuner-hint" id="liveTunerHint">Start the tuner, then play a steady note near your phone.
+            <div class="live-tuner-hint" id="liveTunerHint">Start the tuner, then play a steady note near your device.
             </div>
             <button class="tool-primary-btn" id="liveTunerToggleBtn" type="button">Start Mic</button>
           </section>
@@ -357,13 +462,8 @@
           <path d="M9.5 3h5M12 3v2" />
         </svg>
       </div>
-      <div class="nv" id="navThemeToggle">
-        <svg id="navThemeToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7"
-          stroke-linecap="round" stroke-linejoin="round">
-        </svg>
-      </div>
       <div class="nv" id="navThemes">
-        <svg viewBox="-1 -1 26 26" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"
+        <svg viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"
           stroke-linejoin="round">
 
           <path
@@ -383,6 +483,18 @@
 
           <path fill="currentColor" stroke="none"
             d="M19.857,7.399c-0.059-0.799-0.425-1.528-1.031-2.051c-0.392-0.339-0.759-0.504-1.125-0.504c-0.676,0-1.093,0.527-1.536,1.085c-0.117,0.148-0.243,0.308-0.386,0.472c-0.466,0.539-0.862,1.029-1.001,1.573c-0.168,0.658,0.074,1.274,0.717,1.830c0.588,0.508,1.183,0.766,1.767,0.766c0.673,0,1.303-0.334,1.872-0.993C19.659,9.003,19.915,8.230,19.857,7.399z" />
+        </svg>
+      </div>
+      <div class="nv" id="navSettings">
+        <svg class="nav-gear-icon" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
+          <path d="M496.851,212.213l-48.806-12.201c-4.106-14.108-9.722-27.572-16.666-40.205l25.89-43.151  c4.722-7.869,3.482-17.943-3.008-24.432l-34.485-34.485c-6.489-6.49-16.563-7.729-24.432-3.008l-43.151,25.89  c-12.633-6.944-26.097-12.56-40.205-16.666l-12.201-48.805C297.561,6.246,289.562,0,280.384,0h-48.769  c-9.177,0-17.177,6.246-19.403,15.149l-12.201,48.805c-14.108,4.106-27.572,9.722-40.205,16.666l-43.151-25.89  c-7.87-4.722-17.943-3.482-24.432,3.008L57.738,92.223c-6.489,6.489-7.729,16.562-3.008,24.432l25.89,43.151  c-6.944,12.633-12.56,26.097-16.666,40.205l-48.806,12.201C6.246,214.438,0,222.438,0,231.615v48.769  c0,9.177,6.246,17.177,15.149,19.403l48.806,12.201c4.106,14.108,9.722,27.572,16.666,40.205l-25.89,43.151  c-4.722,7.869-3.482,17.943,3.008,24.432l34.485,34.485c6.489,6.49,16.563,7.729,24.432,3.008l43.151-25.89  c12.633,6.944,26.097,12.56,40.205,16.666l12.201,48.805c2.226,8.903,10.225,15.149,19.403,15.149h48.769  c9.177,0,17.177-6.246,19.403-15.149l12.201-48.805c14.108-4.106,27.572-9.722,40.205-16.666l43.151,25.89  c7.87,4.722,17.943,3.482,24.432-3.008l34.485-34.485c6.489-6.489,7.729-16.562,3.008-24.432l-25.89-43.151  c6.944-12.633,12.56-26.097,16.666-40.205l48.806-12.201c8.903-2.226,15.149-10.226,15.149-19.403v-48.769  C512,222.438,505.754,214.438,496.851,212.213z M256,336c-44.112,0-80-35.888-80-80s35.888-80,80-80s80,35.888,80,80  S300.112,336,256,336z" />
+        </svg>
+      </div>
+      <div class="nv" id="navHelp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9.3a2.6 2.6 0 1 1 4.26 2.01c-.87.69-1.51 1.21-1.51 2.39" />
+          <circle cx="12" cy="17.2" r="1" fill="currentColor" stroke="none" />
         </svg>
       </div>
     </div>
@@ -559,6 +671,8 @@
       <button class="bpm-pad-ok" id="bpmPadOk" type="button">Apply</button>
     </div>
   </div>
+
+  <div class="timer-done-stack" id="timerDoneStack" aria-live="polite" aria-atomic="false"></div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

@@ -10,6 +10,8 @@ export interface PersistedTimer {
   name: string;
   durationSec: number;
   remainingSec: number;
+  running?: boolean;
+  endAtMs?: number | null;
 }
 
 export interface ReferenceTonePrefs {
@@ -28,6 +30,7 @@ interface PersistedState {
   timers?: PersistedTimer[];
   referenceTones?: ReferenceTonePrefs;
   theme?: string;
+  pendulumEnabled?: boolean;
 }
 
 let persistedTimers: PersistedTimer[] = [];
@@ -82,11 +85,15 @@ function sanitizeTimers(raw: unknown): PersistedTimer[] {
     const durationSec = clampInt(obj.durationSec, 1, 300 * 60);
     const remainingSec = clampInt(obj.remainingSec, 0, 300 * 60);
     if (id === null || durationSec === null || remainingSec === null) continue;
+    const running = obj.running === true;
+    const endAtMsRaw = typeof obj.endAtMs === 'number' && Number.isFinite(obj.endAtMs) ? obj.endAtMs : null;
     out.push({
       id,
       name: (typeof obj.name === 'string' && obj.name.trim()) ? obj.name.slice(0, 48) : `Timer ${out.length + 1}`,
       durationSec,
       remainingSec,
+      running,
+      endAtMs: running ? endAtMsRaw : null,
     });
   }
   return out;
@@ -170,6 +177,7 @@ export function loadPersistedAppState(): void {
     persistedTimers = sanitizeTimers(parsed.timers);
     referenceTonePrefs = sanitizeReferenceTonePrefs(parsed.referenceTones);
     persistedThemeName = typeof parsed.theme === 'string' && parsed.theme.trim() ? parsed.theme.trim() : 'deep-cyan';
+    S.setPendulumEnabled(parsed.pendulumEnabled !== false);
   } catch {
     // ignore broken storage.
   }
@@ -188,6 +196,7 @@ export function persistAppStateNow(): void {
       timers: sanitizeTimers(persistedTimers),
       referenceTones: sanitizeReferenceTonePrefs(referenceTonePrefs),
       theme: persistedThemeName,
+      pendulumEnabled: S.pendulumEnabled,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {

@@ -128,7 +128,7 @@ async function playTone(note: string, octave: number, noteKey: string): Promise<
 
 function setLiveTunerSignal(level: number): void {
   if (!refs) return;
-  refs.liveTunerSignalFill.style.width = `${Math.max(6, Math.min(100, level))}%`;
+  refs.liveTunerSignalFill.style.width = `${Math.max(0, Math.min(100, level))}%`;
 }
 
 function setLiveTunerValueActivity(active: boolean): void {
@@ -155,7 +155,7 @@ function resetLiveTunerDisplay(message = 'Start the tuner, then play a steady no
   refs.liveTunerNeedle.style.setProperty('--needle-shift', '0px');
   refs.liveTunerOrb.classList.remove('has-signal', 'is-in-tune');
   setLiveTunerValueActivity(false);
-  setLiveTunerSignal(6);
+  setLiveTunerSignal(0);
 }
 
 function updateLiveTunerPitch(freq: number, rms: number): void {
@@ -212,7 +212,7 @@ function updateLiveTunerNoPitch(rms: number): void {
     refs.liveTunerOrb.classList.remove('has-signal', 'is-in-tune');
     setLiveTunerValueActivity(false);
   }
-  setLiveTunerSignal(Math.max(6, Math.min(55, rms * 840)));
+  setLiveTunerSignal(Math.max(0, Math.min(100, rms * 2800)));
 }
 
 function analyzeBuffer(data: Float32Array, sampleRate: number): { frequency: number | null; rms: number } {
@@ -374,7 +374,10 @@ async function startLiveTuner(): Promise<void> {
     analyser.smoothingTimeConstant = 0.08;
 
     const source = ctx.createMediaStreamSource(stream);
-    source.connect(analyser);
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(3.0, ctx.currentTime);
+    source.connect(gainNode);
+    gainNode.connect(analyser);
 
     if (ctx.state !== 'running') {
       await ctx.resume();
@@ -391,7 +394,7 @@ async function startLiveTuner(): Promise<void> {
 
     refs.liveTunerState.textContent = 'Listening';
     refs.liveTunerState.classList.add('is-live');
-    refs.liveTunerHint.textContent = 'Play one steady note close to your phone.';
+    refs.liveTunerHint.textContent = 'Play one steady note close to your device.';
     liveTunerRaf = window.requestAnimationFrame(tickLiveTuner);
   } catch {
     cleanUpLiveTuner();

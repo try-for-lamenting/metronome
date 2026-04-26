@@ -29,9 +29,13 @@ export let masterVol = 1;
 export let pBeatT = 0;
 export let pBeatMs = 0;
 export let pGoRight = true;
+export let lastBeatT = 0;
 
 // disk.
 export let diskAngleDeg = 0;
+
+// settings.
+export let pendulumEnabled = true;
 
 // tap tempo.
 export const taps: number[] = [];
@@ -66,6 +70,7 @@ export function setMasterVol(v: number) { masterVol = v; }
 export function setPBeatT(v: number) { pBeatT = v; }
 export function setPBeatMs(v: number) { pBeatMs = v; }
 export function setPGoRight(v: boolean) { pGoRight = v; }
+export function setLastBeatT(v: number) { lastBeatT = v; }
 export function setDiskAngleDeg(v: number) { diskAngleDeg = v; }
 export function setSubTracks(v: SubTrack[]) { subTracks = v; }
 export function setAutoSessions(v: AutoSession[]) { autoSessions = v; }
@@ -77,3 +82,4 @@ export function setAutoPhase(v: number) { autoPhase = v; }
 export function setAutoPhaseBar(v: number) { autoPhaseBar = v; }
 export function setAutoBeatInMeasure(v: number) { autoBeatInMeasure = v; }
 export function setPresets(v: MetronomePreset[]) { presets = v; }
+export function setPendulumEnabled(v: boolean) { pendulumEnabled = v; }

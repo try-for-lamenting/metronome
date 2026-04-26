@@ -3,7 +3,7 @@ import type { VisEvent } from './types';
 
 // scheduler timing.
 const AHEAD_FG = 0.12;
-const AHEAD_BG = 8.0;
+const AHEAD_BG = 2.0;
 const START_DELAY = 0.12;
 const RESCHEDULE_EPS = 0.01;
 
@@ -13,6 +13,8 @@ let audioPrimed = false;
 let unlockListenersInstalled = false;
 let keepAliveSource: AudioBufferSourceNode | null = null;
 let outputSuppressed = false;
+let timerAlarmGain: GainNode | null = null;
+let timerAlarmSources: AudioScheduledSourceNode[] = [];
 
 function ensureAudioGraph(): AudioContext {
   if (!S.actx || S.actx.state === 'closed') {
@@ -49,6 +51,22 @@ export function suppressAudioOutput(): void {
 
 export function refreshAudioOutputLevel(): void {
   applyOutputLevel();
+}
+
+export function getEstimatedOutputLatencySec(): number {
+  if (!S.actx) return 0;
+  const ctx = S.actx as AudioContext & {
+    outputLatency?: number;
+    baseLatency?: number;
+  };
+  const base = Number.isFinite(ctx.baseLatency) ? Math.max(0, ctx.baseLatency!) : 0;
+  const output = Number.isFinite(ctx.outputLatency) ? Math.max(0, ctx.outputLatency!) : 0;
+  return Math.min(0.25, base + output);
+}
+
+export function getAudibleContextTime(): number {
+  if (!S.actx) return 0;
+  return Math.max(0, S.actx.currentTime - getEstimatedOutputLatencySec());
 }
 
 // keep the session alive on ios.
@@ -223,7 +241,9 @@ function playFilteredNoiseBurst(
   q: number,
   gainLevel: number,
   decay: number,
-  filterType: BiquadFilterType = 'bandpass'
+  filterType: BiquadFilterType = 'bandpass',
+  output: AudioNode = S.masterGain!,
+  sourceBucket?: AudioScheduledSourceNode[]
 ): void {
   const source = ctx.createBufferSource();
   source.buffer = getNoiseBuffer(ctx);
@@ -239,7 +259,8 @@ function playFilteredNoiseBurst(
 
   source.connect(filter);
   filter.connect(gain);
-  gain.connect(S.masterGain!);
+  gain.connect(output);
+  sourceBucket?.push(source);
   source.start(t);
   source.stop(t + decay + 0.02);
 }
@@ -253,7 +274,9 @@ function playToneBurst(
   hold: number,
   decay: number,
   sweep = 1.06,
-  detuneCents = 0
+  detuneCents = 0,
+  output: AudioNode = S.masterGain!,
+  sourceBucket?: AudioScheduledSourceNode[]
 ): void {
   const osc = ctx.createOscillator();
   osc.type = wave;
@@ -280,7 +303,8 @@ function playToneBurst(
   osc.connect(preFilter);
   preFilter.connect(filter);
   filter.connect(gain);
-  gain.connect(S.masterGain!);
+  gain.connect(output);
+  sourceBucket?.push(osc);
   osc.start(t);
   osc.stop(t + decay + 0.02);
 }
@@ -338,6 +362,117 @@ export function playWheelTicks(deltaSteps: number): void {
   void ctx.resume().then(scheduleTicks).catch(() => { });
 }
 
+export function stopTimerAlarm(): void {
+  for (const source of timerAlarmSources) {
+    try { source.stop(); } catch { /* ignore. */ }
+  }
+  timerAlarmSources = [];
+  if (timerAlarmGain) {
+    try { timerAlarmGain.disconnect(); } catch { /* ignore. */ }
+    timerAlarmGain = null;
+  }
+}
+
+export function isTimerAlarmPlaying(): boolean {
+  return timerAlarmSources.length > 0;
+}
+
+function playTimerAlarmBeep(ctx: AudioContext, t: number, freq: number, vol: number, dur: number, output: AudioNode): void {
+  playFilteredNoiseBurst(
+    ctx, t,
+    Math.max(2200, freq * 2.1), 1.1,
+    vol * 0.95, Math.min(0.028, dur * 0.24),
+    'bandpass', output, timerAlarmSources
+  );
+  playToneBurst(ctx, t + 0.001, freq, 'triangle',
+    vol * 0.68, Math.min(0.04, dur * 0.22), dur + 0.11, 1.035, -8, output, timerAlarmSources);
+  playToneBurst(ctx, t + 0.0014, freq * 1.012, 'triangle',
+    vol * 0.27, Math.min(0.046, dur * 0.24), dur + 0.12, 1.02, 11, output, timerAlarmSources);
+  playToneBurst(ctx, t + 0.0015, freq * 1.86, 'sine',
+    vol * 0.1, Math.min(0.03, dur * 0.18), dur * 0.82, 1.018, 6, output, timerAlarmSources);
+  playFilteredNoiseBurst(ctx, t + 0.002, freq, 1.7, vol * 0.3, dur + 0.08, 'bandpass', output, timerAlarmSources);
+  playFilteredNoiseBurst(ctx, t + 0.003, freq * 1.42, 2.1, vol * 0.18, dur + 0.04, 'bandpass', output, timerAlarmSources);
+  playFilteredNoiseBurst(ctx, t + 0.001,
+    Math.max(420, freq * 0.62), 1.4, vol * 0.16, Math.min(0.11, dur * 0.7), 'bandpass', output, timerAlarmSources);
+}
+
+export function playTimerAlarm(): void {
+  if ('audioSession' in navigator) {
+    (navigator as any).audioSession.type = 'playback';
+  }
+  const ctx = ensureAudioGraph();
+  primeAudio(ctx);
+
+  const scheduleAlarm = (): void => {
+    startKeepAlive(ctx);
+    stopTimerAlarm();
+    timerAlarmGain = ctx.createGain();
+    timerAlarmGain.gain.value = outputSuppressed ? 0 : S.masterVol;
+    timerAlarmGain.connect(ctx.destination);
+    const start = ctx.currentTime + 0.02;
+    const quarter = 0.34;
+    const half = 0.68;
+    const melody: Array<[number, number, number]> = [
+      [0.00, 523.25, quarter],
+      [0.36, 523.25, quarter],
+      [0.72, 783.99, quarter],
+      [1.08, 783.99, quarter],
+      [1.44, 880.0, quarter],
+      [1.80, 880.0, quarter],
+      [2.16, 783.99, half],
+      [2.92, 698.46, quarter],
+      [3.28, 698.46, quarter],
+      [3.64, 659.25, quarter],
+      [4.00, 659.25, quarter],
+      [4.36, 587.33, quarter],
+      [4.72, 587.33, quarter],
+      [5.08, 523.25, half],
+      [5.94, 783.99, quarter],
+      [6.30, 783.99, quarter],
+      [6.66, 698.46, quarter],
+      [7.02, 698.46, quarter],
+      [7.38, 659.25, quarter],
+      [7.74, 659.25, quarter],
+      [8.10, 587.33, half],
+      [8.86, 783.99, quarter],
+      [9.22, 783.99, quarter],
+      [9.58, 698.46, quarter],
+      [9.94, 698.46, quarter],
+      [10.30, 659.25, quarter],
+      [10.66, 659.25, quarter],
+      [11.02, 587.33, half],
+      [11.78, 523.25, quarter],
+      [12.14, 523.25, quarter],
+      [12.50, 783.99, quarter],
+      [12.86, 783.99, quarter],
+      [13.22, 880.0, quarter],
+      [13.58, 880.0, quarter],
+      [13.94, 783.99, half],
+      [14.70, 698.46, quarter],
+      [15.06, 698.46, quarter],
+      [15.42, 659.25, quarter],
+      [15.78, 659.25, quarter],
+      [16.14, 587.33, quarter],
+      [16.50, 587.33, quarter],
+      [16.86, 523.25, half],
+    ];
+    const loopLen = 17.72;
+    for (let repeat = 0; repeat < 3; repeat++) {
+      const offset = repeat * loopLen;
+      for (const [timeOffset, freq, dur] of melody) {
+        playTimerAlarmBeep(ctx, start + offset + timeOffset, freq, 1.6, dur, timerAlarmGain!);
+      }
+    }
+  };
+
+  if (ctx.state === 'running') {
+    scheduleAlarm();
+    return;
+  }
+
+  void ctx.resume().then(scheduleAlarm).catch(() => { });
+}
+
 const MAIN_SND: Record<number, [number, number, number]> = {
   1: [300, 4, 0.26],
   2: [600, 4, 0.26],
@@ -375,6 +510,12 @@ function sched(): void {
   if (!S.playing || !S.actx) return;
   const ahead = isBackground ? AHEAD_BG : AHEAD_FG;
   const beatDur = 60 / S.bpm;
+  if (!Number.isFinite(S.nextT) || S.nextT <= 0 || S.nextT > S.actx.currentTime + ahead + beatDur * 2) {
+    const { nextBeatTime, nextBeatIndex } = getUpcomingBeat(S.actx.currentTime);
+    S.setNextT(nextBeatTime);
+    S.setCurBeat(nextBeatIndex);
+    S.setLastBeatT(nextBeatTime - beatDur);
+  }
   while (S.nextT < S.actx.currentTime + ahead) {
     schedBeat(S.nextT, S.curBeat, beatDur);
     S.setNextT(S.nextT + beatDur);
@@ -393,6 +534,7 @@ export function refreshMetronomeSchedule(): void {
   S.vq.length = 0;
   S.setCurBeat(nextBeatIndex);
   S.setNextT(nextBeatTime);
+  S.setLastBeatT(nextBeatTime - 60 / S.bpm);
   sched();
 }
 
@@ -404,8 +546,10 @@ export async function startMetronome(): Promise<boolean> {
   S.setPlaying(true);
   S.setCurBeat(0);
   S.setNextT(S.actx.currentTime + START_DELAY);
+  S.setLastBeatT(S.nextT - 60 / S.bpm);
   S.setAutoBeatInMeasure(0);
   S.vq.length = 0;
+  sched();
   startSchedWorker();
   return true;
 }
@@ -419,6 +563,7 @@ export function stopMetronome(): void {
   dropScheduledAudio();
   stopKeepAlive();
   S.vq.length = 0;
+  S.setLastBeatT(0);
 }
 
 // fill extra audio before the app hides.

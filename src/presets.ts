@@ -5,7 +5,7 @@ import { renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
 import { renderGrid } from './grid';
 import { schedulePersistAppState } from './persist';
-import { drawSubdivCanvas, renderSubdivTracks } from './subdivisions';
+import { drawSubdivCanvas, formatPolyrhythmRatio, renderSubdivTracks } from './subdivisions';
 
 let onPresetApplied: (() => void) | null = null;
 
@@ -31,10 +31,6 @@ function captureCurrentPreset(name: string): MetronomePreset {
   };
 }
 
-function formatSubdivisionRatio(subTracks: SubTrack[]): string {
-  return subTracks.length ? subTracks.map(track => String(track.div)).join(':') : 'None';
-}
-
 function syncPresetUi(): void {
   renderGrid();
   renderAccents();
@@ -56,15 +52,7 @@ function applyPreset(preset: MetronomePreset): void {
 }
 
 function makePresetSummary(preset: MetronomePreset): string {
-  return `${preset.bpm} BPM · ${preset.sn}/${preset.sd} · ${formatSubdivisionRatio(preset.subTracks)}`;
-}
-
-function summarizeAccentActivity(preset: MetronomePreset): string {
-  const activeMain = preset.bs.filter(v => v > 0).length;
-  const activeSubs = preset.subTracks.reduce((sum, track) => (
-    sum + track.states.slice(1).filter(v => v > 0).length
-  ), 0);
-  return `${activeMain} main · ${activeSubs} sub`;
+  return `${preset.bpm} BPM · ${preset.sn}/${preset.sd} · ${formatPolyrhythmRatio(preset.subTracks)}`;
 }
 
 function getPresetContent(): HTMLElement {
@@ -191,16 +179,10 @@ export function renderPresetEdit(idx: number): void {
           <span>Time Sig</span>
           <strong>${preset.sn}/${preset.sd}</strong>
         </div>
-      </div>
-    </div>
-    <div class="preset-summary-grid">
-      <div class="preset-summary-cell">
-        <span>Subdivisions</span>
-        <strong>${formatSubdivisionRatio(preset.subTracks)}</strong>
-      </div>
-      <div class="preset-summary-cell">
-        <span>Accents</span>
-        <strong>${summarizeAccentActivity(preset)}</strong>
+        <div class="preset-summary-metric">
+          <span>Subdivisions</span>
+          <strong>${formatPolyrhythmRatio(preset.subTracks)}</strong>
+        </div>
       </div>
     </div>
   `;

@@ -1,5 +1,6 @@
 import * as S from './state';
-import { refreshMetronomeSchedule } from './audio';
+import type { SubTrack } from './types';
+import { getAudibleContextTime, refreshMetronomeSchedule } from './audio';
 import { schedulePersistAppState } from './persist';
 
 // sweep tracking.
@@ -9,6 +10,17 @@ let sweepFlashUntil: Map<string, number> = new Map();
 function refreshSubdivisionUi(): void {
   renderSubdivTracks();
   drawSubdivCanvas();
+  syncSubdivisionDisplay();
+}
+
+export function formatPolyrhythmRatio(subTracks: SubTrack[]): string {
+  return subTracks.length ? subTracks.map(track => String(track.div)).join(':') : '0';
+}
+
+export function syncSubdivisionDisplay(): void {
+  const display = document.getElementById('sddisp');
+  if (!display) return;
+  display.textContent = formatPolyrhythmRatio(S.subTracks);
 }
 
 function cssVar(name: string): string {
@@ -100,7 +112,6 @@ export function renderSubdivTracks(): void {
       refreshMetronomeSchedule();
       schedulePersistAppState();
       refreshSubdivisionUi();
-      document.getElementById('sddisp')!.textContent = String(S.subTracks.length);
     });
     row.appendChild(del);
     list.appendChild(row);
@@ -145,9 +156,8 @@ export function handleSubdivCanvasClick(e: MouseEvent): void {
 export function animateSubdivSweep(): void {
   if (!S.playing || !document.getElementById('subdivOverlay')?.classList.contains('open')) return;
   const beatDur = 60 / S.bpm;
-  const now = S.actx?.currentTime ?? 0;
-  // nextt is the next beat time.
-  const lastBeatT = S.nextT - beatDur;
+  const now = getAudibleContextTime();
+  const lastBeatT = S.lastBeatT || (S.nextT - beatDur);
   const elapsed = Math.max(0, now - lastBeatT);
   const frac = (elapsed % beatDur) / beatDur;
   const angle = -Math.PI / 2 + frac * Math.PI * 2;

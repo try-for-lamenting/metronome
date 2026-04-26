@@ -1,5 +1,6 @@
 import './style.css';
 import * as S from './state';
+declare const __APP_VERSION__: string;
 import {
   installAudioUnlock,
   nudgeAudioFromGesture,
@@ -9,6 +10,7 @@ import {
   stopMetronome,
   onAppBackground,
   onAppForeground,
+  getAudibleContextTime,
 } from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
@@ -16,7 +18,7 @@ import { cancelPendulumSettle, pendBeat, pendToEdge, startPendulum } from './pen
 import { drawDisk, setupDiskDrag } from './disk';
 import {
   renderSubdivTracks, drawSubdivCanvas,
-  animateSubdivSweep, handleSubdivCanvasClick, resetSweepAngle,
+  animateSubdivSweep, formatPolyrhythmRatio, handleSubdivCanvasClick, resetSweepAngle, syncSubdivisionDisplay,
 } from './subdivisions';
 import {
   openAutomator, closeAutomator, renderAutoList, renderAutoEdit,
@@ -25,10 +27,11 @@ import {
 } from './automator';
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
-import { loadPersistedAppState, schedulePersistAppState, getPersistedTheme, setPersistedTheme } from './persist';
+import { loadPersistedAppState, schedulePersistAppState, getPersistedTheme, persistAppStateNow, setPersistedTheme } from './persist';
 import { closePresets, openPresets, renderPresetList, setOnPresetApplied } from './presets';
 import { initTunerPage, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
+import { playWheelTicks } from './audio';
 
 // tempo names.
 const TN: [number, number, string][] = [
@@ -333,56 +336,25 @@ const THEMES: Record<string, Record<string, string>> = {
   },
 };
 
-const DARK_THEMES = ['deep-cyan', 'ember', 'aurora', 'midnight-rose', 'moss-gold'] as const;
-const LIGHT_THEMES = ['sunset', 'paper-sky', 'soft-stone', 'mint-sun', 'lemon-ink'] as const;
-const LIGHT_THEME_SET = new Set<string>(LIGHT_THEMES);
 let activeThemeName = 'deep-cyan';
-const SUN_ICON = `
-  <circle cx="12" cy="12" r="4" />
-  <line x1="12" y1="2" x2="12" y2="5" />
-  <line x1="12" y1="19" x2="12" y2="22" />
-  <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
-  <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-  <line x1="2" y1="12" x2="5" y2="12" />
-  <line x1="19" y1="12" x2="22" y2="12" />
-  <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" />
-  <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
-`;
-const MOON_ICON = `
-  <path d="M20 15.2a8.4 8.4 0 1 1-11.2-11.2a7 7 0 0 0 11.2 11.2z" />
-`;
-
-function pickRandomTheme(themeNames: readonly string[], exclude?: string): string {
-  const pool = exclude ? themeNames.filter(name => name !== exclude) : [...themeNames];
-  const choices = pool.length ? pool : [...themeNames];
-  return choices[Math.floor(Math.random() * choices.length)] ?? 'deep-cyan';
-}
 
 function resolveTheme(themeName: string): string {
   return THEMES[themeName] ? themeName : 'deep-cyan';
 }
 
-function isLightTheme(themeName: string): boolean {
-  return LIGHT_THEME_SET.has(themeName);
-}
-
-function syncThemeToggleIcon(themeName: string): void {
-  const icon = document.getElementById('navThemeToggleIcon');
-  if (!icon) return;
-  const lightMode = isLightTheme(themeName);
-  icon.innerHTML = lightMode ? MOON_ICON : SUN_ICON;
-  icon.setAttribute('aria-label', lightMode ? 'switch to a dark theme' : 'switch to a light theme');
-}
-
-function showPage(page: 'metronome' | 'themes' | 'tuner' | 'timer'): void {
+function showPage(page: 'metronome' | 'themes' | 'settings' | 'help' | 'tuner' | 'timer'): void {
   document.getElementById('metronomePage')!.classList.toggle('active', page === 'metronome');
   document.getElementById('themesPage')!.classList.toggle('active', page === 'themes');
+  document.getElementById('settingsPage')!.classList.toggle('active', page === 'settings');
+  document.getElementById('helpPage')!.classList.toggle('active', page === 'help');
   document.getElementById('tunerPage')!.classList.toggle('active', page === 'tuner');
   document.getElementById('timerPage')!.classList.toggle('active', page === 'timer');
   document.getElementById('navHome')!.classList.toggle('on', page === 'metronome');
   document.getElementById('navTuner')!.classList.toggle('on', page === 'tuner');
   document.getElementById('navTimer')!.classList.toggle('on', page === 'timer');
   document.getElementById('navThemes')!.classList.toggle('on', page === 'themes');
+  document.getElementById('navSettings')!.classList.toggle('on', page === 'settings');
+  document.getElementById('navHelp')!.classList.toggle('on', page === 'help');
   setTunerPageActive(page === 'tuner');
   if (page === 'metronome') {
     requestAnimationFrame(() => drawDisk());
@@ -399,15 +371,57 @@ function applyTheme(themeName: string): void {
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
     card.classList.toggle('active', card.dataset.theme === resolvedThemeName);
   });
-  syncThemeToggleIcon(resolvedThemeName);
   setPersistedTheme(resolvedThemeName);
   drawDisk();
   updateUI();
 }
 
-function toggleDarkLightTheme(): void {
-  const nextThemes = LIGHT_THEME_SET.has(activeThemeName) ? DARK_THEMES : LIGHT_THEMES;
-  applyTheme(pickRandomTheme(nextThemes, activeThemeName));
+function getSubdivisionDisplaySizeClass(value: string): string {
+  if (value.length >= 11) return 'ratio-xs';
+  if (value.length >= 9) return 'ratio-sm';
+  if (value.length >= 7) return 'ratio-md';
+  return 'ratio-lg';
+}
+
+function syncPendulumVisibility(): void {
+  const wrap = document.querySelector<HTMLElement>('.pwrap');
+  if (!wrap) return;
+  wrap.classList.toggle('hidden', !S.pendulumEnabled);
+}
+
+function renderSettings(): void {
+  const pendulumToggle = document.getElementById('settingsPendulumToggle') as HTMLInputElement | null;
+  const versionEl = document.getElementById('settingsVersionValue');
+  if (pendulumToggle) pendulumToggle.checked = S.pendulumEnabled;
+  if (versionEl) versionEl.textContent = __APP_VERSION__;
+}
+
+function exportAppData(): void {
+  try {
+    persistAppStateNow();
+    const raw = localStorage.getItem('metronome.app.v1') ?? '{}';
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `metronome-data-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    // ignore export failures.
+  }
+}
+
+function importAppData(file: File): void {
+  void file.text().then(raw => {
+    const parsed = JSON.parse(raw);
+    localStorage.setItem('metronome.app.v1', JSON.stringify(parsed));
+    window.location.reload();
+  }).catch(() => {
+    window.alert('Could not import that file.');
+  });
 }
 
 // ui update.
@@ -419,7 +433,11 @@ function updateUI(): void {
   document.getElementById('sigbtn')!.textContent = sig;
   document.getElementById('snv')!.textContent = String(S.sn);
   document.getElementById('sdv')!.textContent = String(S.sd);
-  document.getElementById('sddisp')!.textContent = String(S.subTracks.length);
+  const polyRatio = formatPolyrhythmRatio(S.subTracks);
+  const subdivDisplay = document.getElementById('sddisp')!;
+  subdivDisplay.textContent = polyRatio;
+  subdivDisplay.classList.remove('ratio-lg', 'ratio-md', 'ratio-sm', 'ratio-xs');
+  subdivDisplay.classList.add(getSubdivisionDisplaySizeClass(polyRatio));
   // bpm note icon.
   const wrap = document.getElementById('noteIcon')!;
   wrap.innerHTML = largeBpmNoteIcon(S.sd);
@@ -480,7 +498,7 @@ function startVis(): void {
 function visLoop(): void {
   if (!S.playing) { vraf = null; return; }
   if (!S.actx) { vraf = requestAnimationFrame(visLoop); return; }
-  const now = S.actx.currentTime;
+  const now = getAudibleContextTime();
 
   for (let i = S.vq.length - 1; i >= 0; i--) {
     const it = S.vq[i];
@@ -489,7 +507,8 @@ function visLoop(): void {
         flashCol(it.b);
         // highlight the beat that just fired.
         refreshGrid(it.b);
-        pendBeat();
+        S.setLastBeatT(it.t);
+        if (S.pendulumEnabled) pendBeat();
         if (it.b === 0) onMeasureComplete();
       }
       S.vq.splice(i, 1);
@@ -616,10 +635,13 @@ function boot(): void {
   showPage('metronome');
   initTunerPage();
   initTimersPage();
+  renderSettings();
   renderGrid();
   updateUI();
   drawDisk();
   startPendulum();
+  syncPendulumVisibility();
+  syncSubdivisionDisplay();
 
   setupDiskDrag(() => updateUI());
 
@@ -627,8 +649,8 @@ function boot(): void {
   bnumEl.addEventListener('click', () => openBpmPad());
 
   // bpm step buttons.
-  document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); refreshMetronomeSchedule(); updateUI(); });
-  document.getElementById('bdn')!.addEventListener('click', () => { S.setBpm(S.bpm - 1); refreshMetronomeSchedule(); updateUI(); });
+  document.getElementById('bup')!.addEventListener('click', () => { playWheelTicks(1); S.setBpm(S.bpm + 1); refreshMetronomeSchedule(); updateUI(); });
+  document.getElementById('bdn')!.addEventListener('click', () => { playWheelTicks(1); S.setBpm(S.bpm - 1); refreshMetronomeSchedule(); updateUI(); });
 
   // signature stepper.
   const DENS = [1, 2, 4, 8, 16, 32];
@@ -752,10 +774,34 @@ function boot(): void {
   document.getElementById('navHome')!.addEventListener('click', () => showPage('metronome'));
   document.getElementById('navTuner')!.addEventListener('click', () => showPage('tuner'));
   document.getElementById('navTimer')!.addEventListener('click', () => showPage('timer'));
-  document.getElementById('navThemeToggle')!.addEventListener('click', toggleDarkLightTheme);
   document.getElementById('navThemes')!.addEventListener('click', () => showPage('themes'));
+  document.getElementById('navSettings')!.addEventListener('click', () => showPage('settings'));
+  document.getElementById('navHelp')!.addEventListener('click', () => showPage('help'));
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
     card.addEventListener('click', () => applyTheme(card.dataset.theme || 'deep-cyan'));
+  });
+  document.getElementById('settingsPendulumToggle')!.addEventListener('change', e => {
+    const nextValue = (e.currentTarget as HTMLInputElement).checked;
+    S.setPendulumEnabled(nextValue);
+    syncPendulumVisibility();
+    if (!nextValue) {
+      cancelPendulumSettle();
+      document.querySelector<HTMLElement>('.pwrap')?.classList.remove('is-flashing');
+    } else if (!S.playing) {
+      pendToEdge();
+    }
+    schedulePersistAppState();
+  });
+  document.getElementById('settingsReloadBtn')!.addEventListener('click', () => window.location.reload());
+  document.getElementById('settingsExportBtn')!.addEventListener('click', exportAppData);
+  document.getElementById('settingsImportBtn')!.addEventListener('click', () => {
+    (document.getElementById('settingsImportFile') as HTMLInputElement).click();
+  });
+  document.getElementById('settingsImportFile')!.addEventListener('change', e => {
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) importAppData(file);
+    input.value = '';
   });
 
   initDraggableSheet('sigOverlay', closeSig);
