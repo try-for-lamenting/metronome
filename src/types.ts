@@ -11,6 +11,15 @@ export interface AutoSession {
   incr: number;   // bpm step size.
 }
 
+export interface MetronomePreset {
+  name: string;
+  bpm: number;
+  sn: number;
+  sd: NoteValue;
+  bs: number[];
+  subTracks: SubTrack[];
+}
+
 export interface VisEvent {
   t: number;
   b: number;

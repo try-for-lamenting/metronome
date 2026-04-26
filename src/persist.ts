@@ -1,5 +1,5 @@
 import * as S from './state';
-import type { AutoSession, NoteValue, SubTrack } from './types';
+import type { AutoSession, MetronomePreset, NoteValue, SubTrack } from './types';
 
 const STORAGE_KEY = 'metronome.app.v1';
 const VALID_DENS: NoteValue[] = [1, 2, 4, 8, 16, 32];
@@ -23,13 +23,16 @@ interface PersistedState {
   sd?: number;
   bs?: number[];
   subTracks?: SubTrack[];
+  presets?: MetronomePreset[];
   autoSessions?: AutoSession[];
   timers?: PersistedTimer[];
   referenceTones?: ReferenceTonePrefs;
+  theme?: string;
 }
 
 let persistedTimers: PersistedTimer[] = [];
 let referenceTonePrefs: ReferenceTonePrefs = { a4Hz: 440, octave: 4 };
+let persistedThemeName = 'deep-cyan';
 
 function clampInt(v: unknown, min: number, max: number): number | null {
   const n = Number(v);
@@ -118,6 +121,28 @@ function sanitizeSubTracks(raw: unknown): SubTrack[] {
   return out;
 }
 
+function sanitizePresets(raw: unknown): MetronomePreset[] {
+  if (!Array.isArray(raw)) return [];
+  const out: MetronomePreset[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const obj = item as Record<string, unknown>;
+    const sn = clampInt(obj.sn, 1, 16);
+    const sd = clampInt(obj.sd, 1, 32);
+    const bpm = clampInt(obj.bpm, 20, 300);
+    if (sn === null || sd === null || bpm === null || !VALID_DENS.includes(sd as NoteValue)) continue;
+    out.push({
+      name: (typeof obj.name === 'string' && obj.name.trim()) ? obj.name.slice(0, 80) : `Preset ${out.length + 1}`,
+      bpm,
+      sn,
+      sd: sd as NoteValue,
+      bs: normalizeBeats(sn, obj.bs),
+      subTracks: sanitizeSubTracks(obj.subTracks),
+    });
+  }
+  return out;
+}
+
 export function loadPersistedAppState(): void {
   try {
     const txt = localStorage.getItem(STORAGE_KEY);
@@ -137,12 +162,14 @@ export function loadPersistedAppState(): void {
 
     S.setBs(normalizeBeats(S.sn, parsed.bs));
     S.setSubTracks(sanitizeSubTracks(parsed.subTracks));
+    S.setPresets(sanitizePresets(parsed.presets));
 
     const autoSessions = sanitizeSessions(parsed.autoSessions);
     if (autoSessions.length) S.setAutoSessions(autoSessions);
 
     persistedTimers = sanitizeTimers(parsed.timers);
     referenceTonePrefs = sanitizeReferenceTonePrefs(parsed.referenceTones);
+    persistedThemeName = typeof parsed.theme === 'string' && parsed.theme.trim() ? parsed.theme.trim() : 'deep-cyan';
   } catch {
     // ignore broken storage.
   }
@@ -156,9 +183,11 @@ export function persistAppStateNow(): void {
       sd: S.sd,
       bs: S.bs.slice(0, S.sn).map(v => Math.max(0, Math.min(3, Math.round(v)))),
       subTracks: sanitizeSubTracks(S.subTracks),
+      presets: sanitizePresets(S.presets),
       autoSessions: sanitizeSessions(S.autoSessions),
       timers: sanitizeTimers(persistedTimers),
       referenceTones: sanitizeReferenceTonePrefs(referenceTonePrefs),
+      theme: persistedThemeName,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
@@ -181,6 +210,15 @@ export function getReferenceTonePrefs(): ReferenceTonePrefs {
 
 export function setReferenceTonePrefs(prefs: ReferenceTonePrefs): void {
   referenceTonePrefs = sanitizeReferenceTonePrefs(prefs);
+  schedulePersistAppState();
+}
+
+export function getPersistedTheme(): string {
+  return persistedThemeName;
+}
+
+export function setPersistedTheme(themeName: string): void {
+  persistedThemeName = themeName || 'deep-cyan';
   schedulePersistAppState();
 }
 

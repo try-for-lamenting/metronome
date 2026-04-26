@@ -8,7 +8,7 @@
 }
 
 :root {
-  --wheel-max: 410;
+  --wheel-max: 372;
   --bg: #07101a;
   --sur: #0c1826;
   --sur2: #111f30;
@@ -142,7 +142,8 @@ body {
 .brow {
   display: flex;
   align-items: center;
-  gap: 6px
+  gap: 6px;
+  padding-top: 2px
 }
 
 .bnum {
@@ -151,7 +152,7 @@ body {
   font-weight: 700;
   color: var(--cy);
   line-height: 1;
-  cursor: ns-resize;
+  cursor: pointer;
   min-width: 68px;
   text-align: center;
   text-shadow: 0 0 20px color-mix(in srgb, var(--cy) 40%, transparent)
@@ -216,12 +217,12 @@ body {
 
 .sigdisp {
   font-family: 'Orbitron', monospace;
-  font-size: 26px;
+  font-size: 40px;
   font-weight: 700;
   color: var(--cy);
   line-height: 1;
   text-shadow: 0 0 16px color-mix(in srgb, var(--cy) 30%, transparent);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 5px;
@@ -234,12 +235,12 @@ body {
 
 .sddisp {
   font-family: 'Orbitron', monospace;
-  font-size: 26px;
+  font-size: 40px;
   font-weight: 700;
   color: var(--cy);
   line-height: 1;
   text-shadow: 0 0 16px color-mix(in srgb, var(--cy) 30%, transparent);
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 5px;
@@ -560,8 +561,8 @@ body {
 }
 
 .dkarr {
-  width: 46px;
-  height: 46px;
+  width: 14%;
+  height: 14%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -577,11 +578,11 @@ body {
 }
 
 #sal {
-  left: 3%
+  left: 1.5%
 }
 
 #sar {
-  right: 3%
+  right: 1.5%
 }
 
 .dkarr:hover {
@@ -598,13 +599,13 @@ body {
 }
 
 .dkarr svg {
-  width: 20px;
-  height: 20px
+  width: 72%;
+  height: 72%
 }
 
 #pbtn {
-  width: 84px;
-  height: 84px;
+  width: 32%;
+  height: 32%;
   border-radius: 50%;
   background: radial-gradient(ellipse at 38% 32%, color-mix(in srgb, var(--cy) 78%, white 24%), color-mix(in srgb, var(--cy) 78%, black 22%));
   display: flex;
@@ -627,8 +628,8 @@ body {
 }
 
 #pbtn svg {
-  width: 34px;
-  height: 34px;
+  width: 42%;
+  height: 42%;
   fill: white;
   margin-left: 2px
 }
@@ -1669,7 +1670,7 @@ body {
 
   .sigdisp,
   .sddisp {
-    font-size: 22px
+    font-size: 34px
   }
 
   #grid {
@@ -1715,15 +1716,21 @@ body {
   inset: 0;
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   z-index: 100;
-  display: none;
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .26s ease, visibility .26s ease;
 }
 
 .overlay.open {
-  display: flex
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto
 }
 
 .sheet {
@@ -1735,15 +1742,39 @@ body {
   border-bottom: none;
   padding: 0 18px 30px;
   max-height: 86vh;
-  overflow-y: auto
+  overflow-y: auto;
+  transform: translateY(26px);
+  opacity: 0;
+  transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .22s ease
+}
+
+.overlay.open .sheet {
+  transform: translateY(0);
+  opacity: 1
+}
+
+.sheet.is-dragging {
+  transition: none !important
 }
 
 .sheet-handle {
-  width: 36px;
-  height: 3px;
-  background: var(--bdr);
-  border-radius: 2px;
-  margin: 12px auto 14px
+  width: 44px;
+  height: 5px;
+  background: color-mix(in srgb, var(--tx2) 38%, var(--bdr) 62%);
+  border-radius: 999px;
+  margin: 12px auto 14px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+  cursor: grab;
+  transition: background .16s ease, transform .16s ease
+}
+
+.sheet:hover .sheet-handle {
+  background: color-mix(in srgb, var(--cy) 24%, var(--bdr) 76%)
+}
+
+.sheet:active .sheet-handle {
+  cursor: grabbing;
+  transform: scaleX(.94)
 }
 
 .sheet-hdr {
@@ -2112,8 +2143,9 @@ body {
 }
 
 .sbM {
-  background: color-mix(in srgb, var(--cy) 12%, transparent);
-  border-color: color-mix(in srgb, var(--cy) 50%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cy) 84%, white 16%), color-mix(in srgb, var(--cy) 76%, black 18%));
+  border-color: color-mix(in srgb, var(--cy) 84%, white 16%);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cy) 24%, transparent), inset 0 1px 0 color-mix(in srgb, white 28%, transparent);
   cursor: default
 }
 
@@ -2206,6 +2238,210 @@ body {
 .auto-item-info {
   font-size: 11px;
   color: var(--tx2)
+}
+
+.preset-list {
+  margin-bottom: 12px
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--sur2);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--bdr);
+  cursor: pointer;
+  transition: border-color .15s, background .15s
+}
+
+.preset-item:hover {
+  border-color: color-mix(in srgb, var(--cy) 36%, transparent);
+  background: color-mix(in srgb, var(--cy) 4%, var(--sur2) 96%)
+}
+
+.preset-item-icon {
+  width: 28px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cy)
+}
+
+.preset-item-icon svg {
+  width: 100%;
+  height: 100%
+}
+
+.preset-item-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px
+}
+
+.preset-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx)
+}
+
+.preset-item-info {
+  font-size: 11px;
+  color: var(--tx2)
+}
+
+.preset-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0
+}
+
+.preset-item-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--cy) 16%, var(--bdr) 84%);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--cy) 4%, transparent);
+  color: var(--tx2);
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s
+}
+
+.preset-item-btn:hover {
+  color: var(--cy);
+  border-color: color-mix(in srgb, var(--cy) 36%, transparent);
+  background: color-mix(in srgb, var(--cy) 10%, transparent)
+}
+
+.preset-item-btn svg {
+  width: 14px;
+  height: 14px
+}
+
+.preset-item-btn-danger {
+  border-color: color-mix(in srgb, var(--danger) 20%, var(--bdr) 80%);
+  background: color-mix(in srgb, var(--danger) 4%, transparent)
+}
+
+.preset-item-btn-danger:hover {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent)
+}
+
+.preset-empty {
+  padding: 14px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cy) 14%, var(--bdr) 86%);
+  background: color-mix(in srgb, var(--cy) 4%, transparent);
+  color: var(--tx2);
+  font-size: 13px;
+  text-align: center
+}
+
+.preset-summary {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  border: 1px solid color-mix(in srgb, var(--cy) 18%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cy) 10%, transparent), color-mix(in srgb, var(--sur2) 92%, transparent))
+}
+
+.preset-summary-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px
+}
+
+.preset-summary-icon {
+  width: 34px;
+  height: 44px;
+  flex-shrink: 0;
+  color: var(--cy);
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+
+.preset-summary-icon svg {
+  width: 100%;
+  height: 100%
+}
+
+.preset-summary-metrics {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px
+}
+
+.preset-summary-metric,
+.preset-summary-cell {
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--cy) 12%, transparent);
+  background: color-mix(in srgb, var(--sur) 68%, transparent)
+}
+
+.preset-summary-metric span,
+.preset-summary-cell span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--tx2);
+  margin-bottom: 4px
+}
+
+.preset-summary-metric strong,
+.preset-summary-cell strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tx)
+}
+
+.preset-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px
+}
+
+.preset-update-btn {
+  width: 100%;
+  padding: 11px;
+  background: color-mix(in srgb, var(--cy) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cy) 24%, transparent);
+  border-radius: 8px;
+  color: var(--tx);
+  cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  transition: background .1s, border-color .15s, color .15s
+}
+
+.preset-update-btn:hover {
+  color: var(--cy);
+  border-color: color-mix(in srgb, var(--cy) 42%, transparent)
+}
+
+.preset-update-btn:active {
+  background: color-mix(in srgb, var(--cy) 12%, transparent)
 }
 
 .auto-add-btn {
@@ -2613,17 +2849,23 @@ body {
 .bpm-pad-overlay {
   position: fixed;
   inset: 0;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 220;
   background: color-mix(in srgb, var(--bg) 74%, transparent);
   backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px)
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .22s ease, visibility .22s ease
 }
 
 .bpm-pad-overlay.open {
-  display: flex
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto
 }
 
 .bpm-pad {
@@ -2632,7 +2874,15 @@ body {
   border: 1px solid color-mix(in srgb, var(--cy) 28%, var(--bdr) 72%);
   background: linear-gradient(180deg, color-mix(in srgb, var(--sur) 94%, transparent), color-mix(in srgb, var(--sur2) 92%, var(--bg) 8%));
   box-shadow: 0 14px 42px rgba(0, 0, 0, .42);
-  padding: 12px
+  padding: 12px;
+  transform: translateY(14px) scale(.97);
+  opacity: 0;
+  transition: transform .24s cubic-bezier(.2, .8, .2, 1), opacity .18s ease
+}
+
+.bpm-pad-overlay.open .bpm-pad {
+  transform: translateY(0) scale(1);
+  opacity: 1
 }
 
 .bpm-pad-title {

@@ -54,6 +54,19 @@
       </div>
 
       <div class="tbar">
+        <div class="tico" id="tico-presets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M3.5 6.5h9.3" />
+            <path d="M3.5 10.5h9.3" />
+            <path d="M3.5 14.5h7.1" />
+            <path d="M3.5 18.5h5.3" />
+            <path d="M16.4 6.2v10.65" />
+            <path d="M16.4 7c.95 1.15 2.05 1.82 3.4 2.05" />
+            <ellipse cx="14.7" cy="17.6" rx="2.72" ry="2.5" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+        <div class="tdiv"></div>
         <div class="tico" id="tico-timer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
             stroke-linejoin="round">
@@ -499,6 +512,29 @@
         </div>
       </div>
       <div id="autoContent"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="presetOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-hdr">
+        <div style="width:28px">
+          <div class="sheet-back" id="presetBack" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </div>
+        </div>
+        <div class="sheet-title" id="presetTitle">PRESETS</div>
+        <div class="sheet-close" id="presetClose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </div>
+      </div>
+      <div id="presetContent"></div>
     </div>
   </div>
 

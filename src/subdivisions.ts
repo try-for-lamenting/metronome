@@ -78,7 +78,6 @@ export function renderSubdivTracks(): void {
       const dot = document.createElement('div');
       if (d === 0) {
         dot.className = 'sb sbM';
-        dot.innerHTML = '<svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>';
       } else {
         const st = track.states[d] || 0;
         dot.className = `sb sb${st}`;

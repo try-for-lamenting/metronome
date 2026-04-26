@@ -1,4 +1,4 @@
-import type { SubTrack, AutoSession, VisEvent } from './types';
+import type { SubTrack, AutoSession, MetronomePreset, VisEvent } from './types';
 
 // tempo and signature.
 export let bpm = 120;
@@ -46,6 +46,9 @@ export let autoPhase = 0;
 export let autoPhaseBar = 0; // completed measures in the phase.
 export let autoBeatInMeasure = 0; // beat inside the measure.
 
+// presets.
+export let presets: MetronomePreset[] = [];
+
 // setters.
 export function setBpm(v: number) { bpm = Math.max(20, Math.min(300, v)); }
 export function setSn(v: number) { sn = Math.max(1, Math.min(16, v)); }
@@ -73,3 +76,4 @@ export function setAutoBarCount(v: number) { autoBarCount = v; }
 export function setAutoPhase(v: number) { autoPhase = v; }
 export function setAutoPhaseBar(v: number) { autoPhaseBar = v; }
 export function setAutoBeatInMeasure(v: number) { autoBeatInMeasure = v; }
+export function setPresets(v: MetronomePreset[]) { presets = v; }

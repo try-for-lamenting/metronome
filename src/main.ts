@@ -12,7 +12,7 @@ import {
 } from './audio';
 
 import { renderGrid, refreshGrid, flashCol } from './grid';
-import { pendBeat, pendToEdge, startPendulum } from './pendulum';
+import { cancelPendulumSettle, pendBeat, pendToEdge, startPendulum } from './pendulum';
 import { drawDisk, setupDiskDrag } from './disk';
 import {
   renderSubdivTracks, drawSubdivCanvas,
@@ -25,7 +25,8 @@ import {
 } from './automator';
 import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } from './dialogs';
 import { largeBpmNoteIcon } from './glyphs';
-import { loadPersistedAppState, schedulePersistAppState } from './persist';
+import { loadPersistedAppState, schedulePersistAppState, getPersistedTheme, setPersistedTheme } from './persist';
+import { closePresets, openPresets, renderPresetList, setOnPresetApplied } from './presets';
 import { initTunerPage, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
 
@@ -399,6 +400,7 @@ function applyTheme(themeName: string): void {
     card.classList.toggle('active', card.dataset.theme === resolvedThemeName);
   });
   syncThemeToggleIcon(resolvedThemeName);
+  setPersistedTheme(resolvedThemeName);
   drawDisk();
   updateUI();
 }
@@ -428,6 +430,7 @@ function updateUI(): void {
 
 // play state.
 async function startPlay(): Promise<void> {
+  cancelPendulumSettle();
   const started = await startMetronome();
   if (!started) return;
   resetSweepAngle();
@@ -461,6 +464,7 @@ function togglePlay(): void {
 // automator playback hooks.
 setOnStartPlayback(startPlay);
 setOnTempoApplied(updateUI);
+setOnPresetApplied(updateUI);
 setOnOpenTempoPad((value, min, max, onChange) => {
   openBpmPad(value, onChange, min, max);
 });
@@ -551,12 +555,58 @@ function applyBpmPadValue(): void {
   bpmPadApply?.(nextValue);
 }
 
+function initDraggableSheet(overlayId: string, onDismiss: () => void): void {
+  const overlay = document.getElementById(overlayId);
+  const sheet = overlay?.querySelector<HTMLElement>('.sheet');
+  const handle = overlay?.querySelector<HTMLElement>('.sheet-handle');
+  if (!overlay || !sheet || !handle) return;
+
+  let pointerId: number | null = null;
+  let startY = 0;
+  let dragY = 0;
+  let dragging = false;
+
+  const resetSheet = (): void => {
+    dragY = 0;
+    dragging = false;
+    sheet.classList.remove('is-dragging');
+    sheet.style.transform = '';
+  };
+
+  handle.addEventListener('pointerdown', e => {
+    if (!overlay.classList.contains('open')) return;
+    pointerId = e.pointerId;
+    startY = e.clientY;
+    dragY = 0;
+    dragging = true;
+    handle.setPointerCapture(e.pointerId);
+    sheet.classList.add('is-dragging');
+  });
+
+  handle.addEventListener('pointermove', e => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dragY = Math.max(0, e.clientY - startY);
+    sheet.style.transform = `translateY(${dragY}px)`;
+  });
+
+  const release = (e: PointerEvent): void => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    const shouldDismiss = dragY > sheet.offsetHeight * 0.5;
+    resetSheet();
+    pointerId = null;
+    if (shouldDismiss) onDismiss();
+  };
+
+  handle.addEventListener('pointerup', release);
+  handle.addEventListener('pointercancel', release);
+}
+
 // boot.
 function boot(): void {
   S.setBs(Array.from({ length: S.sn }, (_, i) => i === 0 ? 3 : 1));
   loadPersistedAppState();
   installAudioUnlock();
-  applyTheme('deep-cyan');
+  applyTheme(getPersistedTheme());
   showPage('metronome');
   initTunerPage();
   initTimersPage();
@@ -567,33 +617,8 @@ function boot(): void {
 
   setupDiskDrag(() => updateUI());
 
-  // bpm drag.
   const bnumEl = document.getElementById('bnum')!;
-  let bdy: number | null = null, bdstart = S.bpm;
-  let bdragged = false;
-  let bdownTs = 0;
-  bnumEl.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    bnumEl.setPointerCapture(e.pointerId);
-    bdy = e.clientY; bdstart = S.bpm;
-    bdragged = false;
-    bdownTs = performance.now();
-  });
-  bnumEl.addEventListener('pointermove', e => {
-    if (bdy === null) return;
-    if (Math.abs(bdy - e.clientY) > 3) bdragged = true;
-    S.setBpm(Math.round(bdstart + (bdy - e.clientY) * 0.55));
-    refreshMetronomeSchedule();
-    updateUI();
-  });
-  bnumEl.addEventListener('pointerup', () => {
-    const heldMs = performance.now() - bdownTs;
-    if (!bdragged && heldMs < 260) openBpmPad();
-    bdy = null;
-  });
-  const bEnd = () => { bdy = null; bdragged = false; };
-  bnumEl.addEventListener('pointerup', bEnd);
-  bnumEl.addEventListener('pointercancel', bEnd);
+  bnumEl.addEventListener('click', () => openBpmPad());
 
   // bpm step buttons.
   document.getElementById('bup')!.addEventListener('click', () => { S.setBpm(S.bpm + 1); refreshMetronomeSchedule(); updateUI(); });
@@ -685,6 +710,11 @@ function boot(): void {
 
   // volume.
   const volPopup = document.getElementById('volPopup')!;
+  document.getElementById('tico-presets')!.addEventListener('click', e => {
+    e.stopPropagation();
+    volPopup.classList.remove('open');
+    openPresets();
+  });
   document.getElementById('tico-vol')!.addEventListener('click', e => { e.stopPropagation(); volPopup.classList.toggle('open'); });
   document.addEventListener('click', () => volPopup.classList.remove('open'));
   volPopup.addEventListener('click', e => e.stopPropagation());
@@ -703,6 +733,9 @@ function boot(): void {
   document.getElementById('autoClose')!.addEventListener('click', closeAutomator);
   document.getElementById('autoOverlay')!.addEventListener('click', e => { if (e.target === document.getElementById('autoOverlay')) closeAutomator(); });
   document.getElementById('autoBack')!.addEventListener('click', renderAutoList);
+  document.getElementById('presetClose')!.addEventListener('click', closePresets);
+  document.getElementById('presetOverlay')!.addEventListener('click', e => { if (e.target === document.getElementById('presetOverlay')) closePresets(); });
+  document.getElementById('presetBack')!.addEventListener('click', renderPresetList);
   document.getElementById('hudPause')!.addEventListener('click', () => {
     S.setAutoPaused(!S.autoPaused);
     document.getElementById('hudPause')!.textContent = S.autoPaused ? 'Resume' : 'Pause';
@@ -718,6 +751,11 @@ function boot(): void {
   document.querySelectorAll<HTMLElement>('.theme-card').forEach(card => {
     card.addEventListener('click', () => applyTheme(card.dataset.theme || 'deep-cyan'));
   });
+
+  initDraggableSheet('sigOverlay', closeSig);
+  initDraggableSheet('subdivOverlay', closeSubdiv);
+  initDraggableSheet('autoOverlay', closeAutomator);
+  initDraggableSheet('presetOverlay', closePresets);
 
   window.addEventListener('resize', () => { drawDisk(); drawSubdivCanvas(); });
 
