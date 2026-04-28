@@ -92,6 +92,10 @@ export function startPendulum(): void {
         } else if (!atEdge) {
           wasAtEdge = false;
         }
+      } else {
+        const w = wrap.offsetWidth;
+        setBallX(ball, S.pGoRight ? w - 12 : 12);
+        wasAtEdge = false;
       }
     }
     praf = requestAnimationFrame(tick);

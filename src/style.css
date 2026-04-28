@@ -424,7 +424,7 @@ body {
   background: var(--cy);
   top: 50%;
   transform: translate(-50%, -50%);
-  left: 50%;
+  left: 12px;
   will-change: left;
   box-shadow: 0 0 10px color-mix(in srgb, var(--cy) 25%, transparent), 0 0 3px var(--cy);
   transition: box-shadow .1s
@@ -1238,7 +1238,16 @@ body {
   font-family: 'Orbitron', monospace;
   font-size: 15px;
   text-align: center;
-  padding: 8px 6px
+  padding: 8px 0;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  line-height: 1.2
+}
+
+.a4-input::-webkit-inner-spin-button,
+.a4-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0
 }
 
 .a4-step {
@@ -2378,21 +2387,21 @@ body {
 
 .sub-div-arrows {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   flex-shrink: 0
 }
 
 .sub-step-btn {
-  width: 18px;
-  height: 14px;
+  width: 30px;
+  height: 28px;
   background: var(--sur);
   border: 1px solid var(--bdr);
-  border-radius: 3px;
+  border-radius: 8px;
   color: var(--cy);
   cursor: pointer;
-  font-size: 8px;
+  font-size: 16px;
   font-weight: 700;
   display: flex;
   align-items: center;

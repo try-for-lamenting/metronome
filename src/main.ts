@@ -29,7 +29,7 @@ import { openSig, closeSig, openSubdiv, closeSubdiv, sigChange, renderAccents } 
 import { largeBpmNoteIcon } from './glyphs';
 import { loadPersistedAppState, schedulePersistAppState, getPersistedTheme, persistAppStateNow, setPersistedTheme } from './persist';
 import { closePresets, openPresets, renderPresetList, setOnPresetApplied } from './presets';
-import { initTunerPage, setTunerPageActive } from './tuner';
+import { initTunerPage, setOnOpenTunerPad, setTunerPageActive } from './tuner';
 import { initTimersPage } from './timers';
 import { setOnOpenTimerPad } from './timers';
 import { playWheelTicks } from './audio';
@@ -477,6 +477,9 @@ setOnOpenTempoPad((value, min, max, onChange) => {
   openBpmPad(value, onChange, min, max);
 });
 setOnOpenTimerPad((value, min, max, onChange) => {
+  openBpmPad(value, onChange, min, max);
+});
+setOnOpenTunerPad((value, min, max, onChange) => {
   openBpmPad(value, onChange, min, max);
 });
 

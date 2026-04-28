@@ -25,6 +25,7 @@ let liveTunerCtx: AudioContext | null = null;
 let liveTunerAnalyser: AnalyserNode | null = null;
 let liveTunerSource: MediaStreamAudioSourceNode | null = null;
 let liveTunerBuffer: Float32Array<ArrayBuffer> | null = null;
+let onOpenTunerPad: ((value: number, min: number, max: number, onChange: (v: number) => void) => void) | null = null;
 
 interface TunerRefs {
   grid: HTMLElement;
@@ -47,6 +48,12 @@ interface TunerRefs {
 }
 
 let refs: TunerRefs | null = null;
+
+export function setOnOpenTunerPad(
+  fn: (value: number, min: number, max: number, onChange: (v: number) => void) => void
+): void {
+  onOpenTunerPad = fn;
+}
 
 function semitoneOffset(note: string, octave: number): number {
   const idx = NOTES.indexOf(note);
@@ -516,8 +523,13 @@ export function initTunerPage(): void {
   a4Hz = prefs.a4Hz;
   selectedOctave = OCTAVES.includes(prefs.octave) ? prefs.octave : 4;
   refs.a4Input.value = String(a4Hz);
+  refs.a4Input.readOnly = true;
+  refs.a4Input.inputMode = 'none';
 
   refs.a4Input.addEventListener('change', () => applyA4(parseInt(refs!.a4Input.value || '440', 10) || 440));
+  refs.a4Input.addEventListener('click', () => {
+    onOpenTunerPad?.(a4Hz, 400, 480, applyA4);
+  });
   refs.a4DownBtn.addEventListener('click', () => applyA4(a4Hz - 1));
   refs.a4UpBtn.addEventListener('click', () => applyA4(a4Hz + 1));
   refs.liveTunerToggleBtn.addEventListener('click', () => {

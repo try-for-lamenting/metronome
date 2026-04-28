@@ -57,20 +57,8 @@ export function renderSubdivTracks(): void {
     stepper.className = 'sub-div-stepper';
     const arrows = document.createElement('div');
     arrows.className = 'sub-div-arrows';
-    const upBtn = document.createElement('div');
-    upBtn.className = 'sub-step-btn'; upBtn.textContent = '▲';
-    upBtn.addEventListener('click', () => {
-      if (track.div >= 16) return;
-      track.div++;
-      track.states.push(1);
-      refreshMetronomeSchedule();
-      schedulePersistAppState();
-      refreshSubdivisionUi();
-    });
-    const numLbl = document.createElement('div');
-    numLbl.className = 'sub-divlbl'; numLbl.textContent = String(track.div);
-    const dnBtn = document.createElement('div');
-    dnBtn.className = 'sub-step-btn'; dnBtn.textContent = '▼';
+    const dnBtn = document.createElement('button');
+    dnBtn.className = 'sub-step-btn'; dnBtn.textContent = '−'; dnBtn.type = 'button';
     dnBtn.addEventListener('click', () => {
       if (track.div <= 2) return;
       track.div--;
@@ -79,8 +67,20 @@ export function renderSubdivTracks(): void {
       schedulePersistAppState();
       refreshSubdivisionUi();
     });
-    arrows.appendChild(upBtn);
+    const numLbl = document.createElement('div');
+    numLbl.className = 'sub-divlbl'; numLbl.textContent = String(track.div);
+    const upBtn = document.createElement('button');
+    upBtn.className = 'sub-step-btn'; upBtn.textContent = '+'; upBtn.type = 'button';
+    upBtn.addEventListener('click', () => {
+      if (track.div >= 16) return;
+      track.div++;
+      track.states.push(1);
+      refreshMetronomeSchedule();
+      schedulePersistAppState();
+      refreshSubdivisionUi();
+    });
     arrows.appendChild(dnBtn);
+    arrows.appendChild(upBtn);
     stepper.appendChild(arrows);
     stepper.appendChild(numLbl);
     row.appendChild(stepper);

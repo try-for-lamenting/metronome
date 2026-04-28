@@ -193,7 +193,7 @@ export function renderAutoEdit(idx: number): void {
     sess.period = v;
     updateEstimate();
     schedulePersistAppState();
-  });
+  }, false, true);
   periodWrap.appendChild(periodLbl); periodWrap.appendChild(periodStepper);
 
   const incrWrap = document.createElement('div'); incrWrap.className = 'auto-field';
@@ -202,7 +202,7 @@ export function renderAutoEdit(idx: number): void {
     sess.incr = v;
     updateEstimate();
     schedulePersistAppState();
-  });
+  }, false, true);
   incrWrap.appendChild(incrLbl); incrWrap.appendChild(incrStepper);
 
   piRow.appendChild(periodWrap); piRow.appendChild(incrWrap);
